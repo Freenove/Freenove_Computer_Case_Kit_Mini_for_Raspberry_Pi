@@ -122,12 +122,16 @@ class LED_TASK:
     
     def led_run_rainbow_mode(self):
         step = 0
+        led_count = self.led_strip.numPixels()
         while True:
             if self.pi_led_mode != 6:
                 return  # Exit if mode changed
-            for i in range(self.led_strip.numPixels()):
-                j = (int(i * 256 / self.led_strip.numPixels()) + step) % 255
-                color = self.led_strip.wheel(j)
+            colors = []
+            for i in range(led_count):
+                j = (int(i * 256 / led_count) + step) % 255
+                colors.append(self.led_strip.wheel(j))
+            
+            for i, color in enumerate(colors):
                 self.led_strip.setPixelColor(i, color)
             self.led_strip.show()
             step = (step + 1) % 256

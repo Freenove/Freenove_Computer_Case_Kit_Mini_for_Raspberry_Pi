@@ -40,11 +40,19 @@ class ServiceGenerator:
             sys.exit(1)
             
     def create_my_service(self):
-        """Create systemd service file"""
-        if not self.current_directory or not self.current_username:
-            print("Error: Directory or username not set.")
-            sys.exit(1)
-            
+        if "led" in self.service_name.lower():
+            cpu_affinity = 1
+            cpu_priority = 80
+            nice_value = -19
+        elif "fan" in self.service_name.lower():
+            cpu_affinity = 0
+            cpu_priority = 60
+            nice_value = -10
+        else:
+            cpu_affinity = 0
+            cpu_priority = 50
+            nice_value = -15
+
         service_content = f"""[Unit]
 Description=My Python Script Service
 
@@ -55,10 +63,16 @@ StandardOutput=inherit
 StandardError=inherit
 Restart=always
 User={self.current_username}
+Nice={nice_value}
+CPUSchedulingPolicy=rr
+CPUSchedulingPriority={cpu_priority}
+MemoryLock=yes
+CPUAffinity={cpu_affinity}
 
 [Install]
 WantedBy=multi-user.target
 """
+    
         service_file_path = os.path.join('/etc/systemd/system/', self.service_name)
         if os.path.exists(service_file_path):
             os.remove(service_file_path)

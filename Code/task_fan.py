@@ -122,15 +122,20 @@ class FAN_TASK:
             2: self.fan_run_original_mode   # Code
         }
         
+        last_check_time = time.time()
+        check_interval = 2.0
+
         while True:
-            # Get corresponding function and execute
-            mode_func = mode_functions.get(self.pi_fan_mode, self.fan_run_original_mode)
-            if mode_func:
-                try:
-                    # Execute mode function
-                    mode_func()
-                except Exception as e:
-                    print(f"Error in fan mode function: {e}")
+            current_time = time.time()
+            if current_time - last_check_time >= check_interval:
+                # Get corresponding function and execute
+                mode_func = mode_functions.get(self.pi_fan_mode, self.fan_run_original_mode)
+                if mode_func:
+                    try:
+                        # Execute mode function
+                        mode_func()
+                    except Exception as e:
+                        print(f"Error in fan mode function: {e}")
             time.sleep(0.1)
     
     def stop(self):
