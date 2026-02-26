@@ -136,7 +136,7 @@ class FAN_TASK:
                         mode_func()
                     except Exception as e:
                         print(f"Error in fan mode function: {e}")
-            time.sleep(0.1)
+            time.sleep(0.3)
     
     def stop(self):
         self.system_information.set_pi_pwm_duty(0)
