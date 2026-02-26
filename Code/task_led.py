@@ -10,7 +10,7 @@ class LED_TASK:
             config.get('green_value', 0),
             config.get('blue_value', 255)
         )
-        speed = [0.3, 0.1, 0.1, 0.1, 0.015, 0.05, 0.03, 0.3, 1.0, 0.1]
+        speed = [0.3, 0.1, 0.1, 0.1, 0.015, 0.05, 0.05, 0.3, 1.0, 0.1]
         while len(speed) < 10:
             speed.append(0.1)
         self.pi_led_speed = speed
