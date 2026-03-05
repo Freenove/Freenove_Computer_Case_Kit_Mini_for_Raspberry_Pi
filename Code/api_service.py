@@ -192,15 +192,17 @@ WantedBy=multi-user.target
         """Print shortcut command tips"""
         print("*"*50)
         print("Here are some shortcut commands.")
-        print("Create boot background task:          sudo systemctl enable my_app_running.service")
-        print("Disable boot background task:         sudo systemctl disable my_app_running.service")
-        print("Temporarily start background task:    sudo systemctl start my_app_running.service")
-        print("Temporarily stop background task:     sudo systemctl stop my_app_running.service")
-        print("Temporarily restart background task:  sudo systemctl restart my_app_running.service")
+        print(f"Create boot background task:          sudo systemctl enable {self.service_name}")
+        print(f"Disable boot background task:         sudo systemctl disable {self.service_name}")
+        print(f"Temporarily start background task:    sudo systemctl start {self.service_name}")
+        print(f"Temporarily stop background task:     sudo systemctl stop {self.service_name}")
+        print(f"Temporarily restart background task:  sudo systemctl restart {self.service_name}")
         print("*"*50)
         print("")
 
 # Usage example
 if __name__ == "__main__":
-    generator = ServiceGenerator()
-    #generator.generate_and_run_service()
+    generator_led = ServiceGenerator("task_led.py", "task_led.service")
+    generator_led.generate_and_run_service()
+    generator_fan = ServiceGenerator("task_fan.py", "task_fan.service")
+    generator_fan.generate_and_run_service()

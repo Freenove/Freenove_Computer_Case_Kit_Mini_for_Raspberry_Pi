@@ -53,8 +53,8 @@ class MainWindow(QMainWindow):
         self.metric_labels = [
             "CPU Usage",     # CPU usage
             "RAM Usage",     # Memory usage
-            "CPU Temp",      # Raspberry Pi temperature
             "Storage Usage", # Storage usage
+            "CPU Temp",      # Raspberry Pi temperature
             "RPi PWM",       # Raspberry Pi fan PWM
             ""               # None
         ]
@@ -252,14 +252,14 @@ class MainWindow(QMainWindow):
             # Memory usage
             self.monitoring_tab.setCircleProgressValue(1, ram_usage, self.metric_labels[1], f"{ram_usage:.1f}%")
 
+            # Storage usage
+            self.monitoring_tab.setCircleProgressValue(2, disk_usage, self.metric_labels[2], f"{disk_usage:.1f}%")
+
             # Raspberry Pi temperature 
             if self.convert_to_fahrenheit == False:
-                self.monitoring_tab.setCircleProgressValue(2, min(100, rpi_temp/80*100), self.metric_labels[2], f"{rpi_temp:.1f}°C")
+                self.monitoring_tab.setCircleProgressValue(3, min(100, rpi_temp/80*100), self.metric_labels[3], f"{rpi_temp:.1f}°C")
             else:
-                self.monitoring_tab.setCircleProgressValue(2, min(100, rpi_temp/80*100), self.metric_labels[2], f"{rpi_temp_fahrenheit:.1f}°F")
-            
-            # Storage usage
-            self.monitoring_tab.setCircleProgressValue(3, disk_usage, self.metric_labels[3], f"{disk_usage:.1f}%")
+                self.monitoring_tab.setCircleProgressValue(3, min(100, rpi_temp/80*100), self.metric_labels[3], f"{rpi_temp_fahrenheit:.1f}°F")
             
             # Raspberry Pi fan PWM (0-255 range)
             rpi_fan_percent = (rpi_fan_pwm / 255) * 100 if rpi_fan_pwm >= 0 else 0
