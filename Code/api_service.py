@@ -40,19 +40,11 @@ class ServiceGenerator:
             sys.exit(1)
             
     def create_my_service(self):
-        if "led" in self.service_name.lower():
-            cpu_affinity = 1
-            cpu_priority = 80
-            nice_value = -19
-        elif "fan" in self.service_name.lower():
-            cpu_affinity = 0
-            cpu_priority = 60
-            nice_value = -10
-        else:
-            cpu_affinity = 0
-            cpu_priority = 50
-            nice_value = -15
-
+        """Create systemd service file"""
+        if not self.current_directory or not self.current_username:
+            print("Error: Directory or username not set.")
+            sys.exit(1)
+            
         service_content = f"""[Unit]
 Description=My Python Script Service
 
@@ -63,16 +55,10 @@ StandardOutput=inherit
 StandardError=inherit
 Restart=always
 User={self.current_username}
-Nice={nice_value}
-CPUSchedulingPolicy=rr
-CPUSchedulingPriority={cpu_priority}
-MemoryLock=yes
-CPUAffinity={cpu_affinity}
 
 [Install]
 WantedBy=multi-user.target
 """
-    
         service_file_path = os.path.join('/etc/systemd/system/', self.service_name)
         if os.path.exists(service_file_path):
             os.remove(service_file_path)
@@ -192,17 +178,15 @@ WantedBy=multi-user.target
         """Print shortcut command tips"""
         print("*"*50)
         print("Here are some shortcut commands.")
-        print(f"Create boot background task:          sudo systemctl enable {self.service_name}")
-        print(f"Disable boot background task:         sudo systemctl disable {self.service_name}")
-        print(f"Temporarily start background task:    sudo systemctl start {self.service_name}")
-        print(f"Temporarily stop background task:     sudo systemctl stop {self.service_name}")
-        print(f"Temporarily restart background task:  sudo systemctl restart {self.service_name}")
+        print("Create boot background task:          sudo systemctl enable my_app_running.service")
+        print("Disable boot background task:         sudo systemctl disable my_app_running.service")
+        print("Temporarily start background task:    sudo systemctl start my_app_running.service")
+        print("Temporarily stop background task:     sudo systemctl stop my_app_running.service")
+        print("Temporarily restart background task:  sudo systemctl restart my_app_running.service")
         print("*"*50)
         print("")
 
 # Usage example
 if __name__ == "__main__":
-    generator_led = ServiceGenerator("task_led.py", "task_led.service")
-    generator_led.generate_and_run_service()
-    generator_fan = ServiceGenerator("task_fan.py", "task_fan.service")
-    generator_fan.generate_and_run_service()
+    generator = ServiceGenerator()
+    #generator.generate_and_run_service()

@@ -2,6 +2,24 @@
 
 > A mini computer case kit suitable for Raspberry Pi 5.
 
+## Introduction
+
+This computer case kit is specifically designed for Raspberry Pi 5. Due to different configurations, prices vary. Please choose according to your actual needs.
+
+We offer options with 1, 2, or 4 SSD slots, with or without audio function, and with or without one SSD. 
+
+Here is one of our product displays to give you a more intuitive understanding of the product's appearance design and structural features:
+
+*FNK0108R - 4-slot version, with built-in audio, supports 4 SSD installation.*
+
+*Note: Only one SSD is provided at most when actually sold.*
+
+<div align="center">
+
+<img src="Picture/FNK0108R.PT03.jpg" style="width:80%">
+
+</div>
+
 ## Download
 
 * **Use command in console**
@@ -18,6 +36,27 @@
 > If you meet any difficulties, please contact our support team for help.
 
 For details, please refer to the table below.
+
+## Product Model Overview
+
+
+| no-built-in audio series             | NVMe Slot Count | SSD Support |
+|-------------|------------|--------------|
+| `FNK0107A`  | 1 Slot     | No          |
+| `FNK0107B`  | 2 Slots    | No          | 
+| `FNK0107C`  | 4 Slots    | No          |
+| `FNK0107H`  | 1 Slot     | 1 SSD       | 
+| `FNK0107K`  | 2 Slots    | 1 SSD       | 
+| `FNK0107L`  | 4 Slots    | 1 SSD       | 
+
+| with built-in audio series       | NVMe Slot Count | SSD Support |
+|-------------|------------|--------------|
+| `FNK0107P`  | 1 Slot     | No          |
+| `FNK0107Q`  | 2 Slots    | No          | 
+| `FNK0107R`  | 4 Slots    | No          |
+| `FNK0107U`  | 1 Slot     | 1 SSD       | 
+| `FNK0107V`  | 2 Slots    | 1 SSD       | 
+| `FNK0107W`  | 4 Slots    | 1 SSD       | 
 
 ### Support
 

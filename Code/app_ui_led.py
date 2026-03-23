@@ -11,7 +11,7 @@ class LedTab(QWidget):
         super().__init__()
         
         # Control area
-        self.led_mode_radio_buttons_names = ["Rainbow", "Gradual", "Breathing", "Blink", "Rotate", "Following", "Static", "Code", "Close"] # LED mode names
+        self.led_mode_radio_buttons_names = ["Blink", "Rotate", "Rotate Quad", "Following", "Breathing", "Gradual", "Rainbow", "Code", "Close"] # LED mode names
         self.title_label = None                     # Title label
         self.led_mode_radio_buttons = []            # Create radio button list
         self.led_lable_red_slider_label = None      # Red slider label
@@ -31,7 +31,7 @@ class LedTab(QWidget):
         # Variable area
         self.window_width = width               # Window width
         self.window_height = height             # Window height
-        self.led_mode = 0                       # LED mode (0-8, 8 = off)
+        self.led_mode = 6                       # LED mode (0-8, 8 = off)
         self.led_last_mode = 8                  # Last LED mode
         self.led_slider_red_value = 0           # Red slider value
         self.led_slider_green_value = 0         # Green slider value
@@ -421,7 +421,7 @@ class LedTab(QWidget):
                 radio_button.setChecked(False)
                 radio_button.setStyleSheet(self.radio_button_style)
         
-        modes_with_sliders = ["Blink", "Rotate", "Static", "Following", "Breathing"]
+        modes_with_sliders = ["Blink", "Rotate", "Rotate Quad", "Following", "Breathing"]
         slider_enabled = self.led_mode_radio_buttons_names[mode] in modes_with_sliders
         self.set_slider_control_state(slider_enabled)
 
