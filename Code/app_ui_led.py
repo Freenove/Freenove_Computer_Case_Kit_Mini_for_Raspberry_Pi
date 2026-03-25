@@ -11,27 +11,28 @@ class LedTab(QWidget):
         super().__init__()
         
         # Control area
-        self.led_mode_radio_buttons_names = ["Blink", "Rotate", "Rotate Quad", "Following", "Breathing", "Gradual", "Rainbow", "Code", "Close"] # LED mode names
+        self.led_mode_radio_buttons_names = ["Rainbow", "Gradual", "Breathing", "Blink", "Rotate", "Following", "Static", "Code", "Close"] # LED mode names
         self.title_label = None                     # Title label
         self.led_mode_radio_buttons = []            # Create radio button list
-        self.led_lable_red_slider_label = None      # Red slider label
-        self.led_lable_red_slider_value = None      # Red slider value label
-        self.led_lable_green_slider_label = None    # Green slider label
-        self.led_lable_green_slider_value = None    # Green slider value label
-        self.led_lable_blue_slider_label = None     # Blue slider label
-        self.led_lable_blue_slider_value = None     # Blue slider value label
-        self.led_lable_brightness_label = None      # Brightness label
+        self.led_label_red_slider_label = None      # Red slider label
+        self.led_label_red_slider_value = None      # Red slider value label
+        self.led_label_green_slider_label = None    # Green slider label
+        self.led_label_green_slider_value = None    # Green slider value label
+        self.led_label_blue_slider_label = None     # Blue slider label
+        self.led_label_blue_slider_value = None     # Blue slider value label
+        self.led_label_brightness_label = None      # Brightness label
         self.led_brightness_slider = None           # Brightness slider
         self.led_brightness_value_label = None      # Brightness value label
         self.led_slider_red = None                  # Red slider
         self.led_slider_green = None                # Green slider
         self.led_slider_blue = None                 # Blue slider
-        self.save_params_button = None              # Save parameters button
+        self.start_task_button = None               # Start task button
+        self.stop_task_button = None                # Stop task button
         
         # Variable area
         self.window_width = width               # Window width
         self.window_height = height             # Window height
-        self.led_mode = 6                       # LED mode (0-8, 8 = off)
+        self.led_mode = 0                       # LED mode (0-8, 8 = off)
         self.led_last_mode = 8                  # Last LED mode
         self.led_slider_red_value = 0           # Red slider value
         self.led_slider_green_value = 0         # Green slider value
@@ -105,7 +106,7 @@ class LedTab(QWidget):
         
         self.button_disabled_style = """
             QPushButton {
-                background-color: #555555;
+                background-color: #444444;
                 color: #888888;
                 border: none;
                 outline: none;
@@ -237,21 +238,21 @@ class LedTab(QWidget):
         self.title_layout.addWidget(self.title_label) # Add title label
 
         # Add label, slider, slider value display - RED
-        self.led_label_red_slider_label, self.led_slider_red, self.led_lable_red_slider_value, self.led_slider_red_layout = \
+        self.led_label_red_slider_label, self.led_slider_red, self.led_label_red_slider_value, self.led_slider_red_layout = \
             self._create_slider_with_label("Red:", 0, 255, 0, "red")
 
         # Connect red slider value change
         self.led_slider_red.valueChanged.connect(self.on_red_slider_changed)
         
         # Add label, slider, slider value display - GREEN
-        self.led_label_green_slider_label, self.led_slider_green, self.led_lable_green_slider_value, self.led_slider_green_layout = \
+        self.led_label_green_slider_label, self.led_slider_green, self.led_label_green_slider_value, self.led_slider_green_layout = \
             self._create_slider_with_label("Green:", 0, 255, 0, "green")
 
         # Connect green slider value change
         self.led_slider_green.valueChanged.connect(self.on_green_slider_changed)
         
         # Add label, slider, slider value display - BLUE
-        self.led_label_blue_slider_label, self.led_slider_blue, self.led_lable_blue_slider_value, self.led_slider_blue_layout = \
+        self.led_label_blue_slider_label, self.led_slider_blue, self.led_label_blue_slider_value, self.led_slider_blue_layout = \
             self._create_slider_with_label("Blue:", 0, 255, 255, "blue")
 
         # Connect blue slider value change
@@ -264,14 +265,18 @@ class LedTab(QWidget):
         # Connect brightness slider value change
         self.led_brightness_slider.valueChanged.connect(self.on_brightness_changed)
 
-        # Create save parameters button with same width as other controls
-        self.save_params_button = QPushButton("Save Parameters")
-        self.save_params_button.setStyleSheet(self.button_style)
+        # Create start task button
+        self.start_task_button = QPushButton("Start Task")
+        self.start_task_button.setStyleSheet(self.button_style)
 
-        # Create layout for the save button that matches other controls
-        self.save_button_layout = QHBoxLayout()
-        # Add the button to span the full width like other controls
-        self.save_button_layout.addWidget(self.save_params_button)
+        # Create stop task button
+        self.stop_task_button = QPushButton("Stop Task")
+        self.stop_task_button.setStyleSheet(self.button_style)
+
+        # Create layout for the buttons that matches other controls
+        self.button_layout = QHBoxLayout()
+        self.button_layout.addWidget(self.start_task_button)
+        self.button_layout.addWidget(self.stop_task_button)
 
         # Set main layout
         self.vbox_layout = QVBoxLayout()
@@ -285,13 +290,16 @@ class LedTab(QWidget):
         self.vbox_layout.addLayout(self.led_slider_green_layout)
         self.vbox_layout.addLayout(self.led_slider_blue_layout)
         self.vbox_layout.addLayout(self.led_brightness_layout)
-        self.vbox_layout.addLayout(self.save_button_layout)  # Add save button at the bottom
+        self.vbox_layout.addLayout(self.button_layout)  # Add buttons at the bottom
 
         # Set main window
         self.setLayout(self.vbox_layout)
+    
+    def set_start_task_button_enabled(self, enabled):
+        self.enable_widget_with_style(self.start_task_button, self.button_style, self.button_disabled_style, enabled)
 
-    def set_save_button_enabled(self, enabled):
-        self.enable_widget_with_style(self.save_params_button, self.button_style, self.button_disabled_style, enabled)
+    def set_stop_task_button_enabled(self, enabled):
+        self.enable_widget_with_style(self.stop_task_button, self.button_style, self.button_disabled_style, enabled)    
     
     # Event handlers for sliders
     def on_brightness_changed(self, value):
@@ -300,17 +308,17 @@ class LedTab(QWidget):
         
     def on_red_slider_changed(self, value):
         self.led_slider_red_value = value
-        self.led_lable_red_slider_value.setText(str(value))
+        self.led_label_red_slider_value.setText(str(value))
         self.update_title_color()
         
     def on_green_slider_changed(self, value):
         self.led_slider_green_value = value
-        self.led_lable_green_slider_value.setText(str(value))
+        self.led_label_green_slider_value.setText(str(value))
         self.update_title_color()
         
     def on_blue_slider_changed(self, value):
         self.led_slider_blue_value = value
-        self.led_lable_blue_slider_value.setText(str(value))
+        self.led_label_blue_slider_value.setText(str(value))
         self.update_title_color()
     
     # Update title color based on current RGB values
@@ -378,20 +386,20 @@ class LedTab(QWidget):
         
         # Check all slider related controls before setting properties
         controls_to_update = [
+            ('led_label_red_slider_label', 'setMaximumHeight'),
+            ('led_label_green_slider_label', 'setMaximumHeight'), 
+            ('led_label_blue_slider_label', 'setMaximumHeight'),
             ('led_label_brightness_label', 'setMaximumHeight'),
-            ('led_lable_red_slider_label', 'setMaximumHeight'),
-            ('led_lable_green_slider_label', 'setMaximumHeight'), 
-            ('led_lable_blue_slider_label', 'setMaximumHeight'),
-            ('led_lable_brightness_label', 'setMaximumHeight'),
-            ('led_lable_red_slider_value', 'setMaximumHeight'),
-            ('led_lable_green_slider_value', 'setMaximumHeight'),
-            ('led_lable_blue_slider_value', 'setMaximumHeight'),
+            ('led_label_red_slider_value', 'setMaximumHeight'),
+            ('led_label_green_slider_value', 'setMaximumHeight'),
+            ('led_label_blue_slider_value', 'setMaximumHeight'),
             ('led_brightness_value_label', 'setMaximumHeight'),
             ('led_brightness_slider', 'setMaximumHeight'),
             ('led_slider_red', 'setMaximumHeight'),
             ('led_slider_green', 'setMaximumHeight'),
             ('led_slider_blue', 'setMaximumHeight'),
-            ('save_params_button', 'setMaximumHeight')
+            ('start_task_button', 'setMaximumHeight'),
+            ('stop_task_button', 'setMaximumHeight')
         ]
         
         for attr_name, method_name in controls_to_update:
@@ -421,7 +429,7 @@ class LedTab(QWidget):
                 radio_button.setChecked(False)
                 radio_button.setStyleSheet(self.radio_button_style)
         
-        modes_with_sliders = ["Blink", "Rotate", "Rotate Quad", "Following", "Breathing"]
+        modes_with_sliders = ["Blink", "Rotate", "Static", "Following", "Breathing"]
         slider_enabled = self.led_mode_radio_buttons_names[mode] in modes_with_sliders
         self.set_slider_control_state(slider_enabled)
 
@@ -464,13 +472,13 @@ class LedTab(QWidget):
         self.enable_widget_with_style(self.led_brightness_value_label, self.slider_label_style, self.slider_label_disabled_style, state)
         self.enable_widget_with_style(self.led_label_red_slider_label, self.slider_label_style, self.slider_label_disabled_style, state)
         self.enable_widget_with_style(self.led_slider_red, self.red_slider_style, self.gray_slider_style, state)
-        self.enable_widget_with_style(self.led_lable_red_slider_value, self.slider_label_style, self.slider_label_disabled_style, state)
+        self.enable_widget_with_style(self.led_label_red_slider_value, self.slider_label_style, self.slider_label_disabled_style, state)
         self.enable_widget_with_style(self.led_label_green_slider_label, self.slider_label_style, self.slider_label_disabled_style, state)
         self.enable_widget_with_style(self.led_slider_green, self.green_slider_style, self.gray_slider_style, state)
-        self.enable_widget_with_style(self.led_lable_green_slider_value, self.slider_label_style, self.slider_label_disabled_style, state)
+        self.enable_widget_with_style(self.led_label_green_slider_value, self.slider_label_style, self.slider_label_disabled_style, state)
         self.enable_widget_with_style(self.led_label_blue_slider_label, self.slider_label_style, self.slider_label_disabled_style, state)
         self.enable_widget_with_style(self.led_slider_blue, self.blue_slider_style, self.gray_slider_style, state)
-        self.enable_widget_with_style(self.led_lable_blue_slider_value, self.slider_label_style, self.slider_label_disabled_style, state)
+        self.enable_widget_with_style(self.led_label_blue_slider_value, self.slider_label_style, self.slider_label_disabled_style, state)
         self.update_title_color(state)
 
     # Set slider value and title color
@@ -478,9 +486,9 @@ class LedTab(QWidget):
         self.led_slider_red.setValue(color[0])
         self.led_slider_green.setValue(color[1])
         self.led_slider_blue.setValue(color[2])
-        self.led_lable_red_slider_value.setText(str(color[0]))
-        self.led_lable_green_slider_value.setText(str(color[1]))
-        self.led_lable_blue_slider_value.setText(str(color[2]))
+        self.led_label_red_slider_value.setText(str(color[0]))
+        self.led_label_green_slider_value.setText(str(color[1]))
+        self.led_label_blue_slider_value.setText(str(color[2]))
         self.led_slider_red_value = color[0]
         self.led_slider_green_value = color[1]
         self.led_slider_blue_value = color[2]

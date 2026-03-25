@@ -124,7 +124,7 @@ if __name__ == "__main__":
     import sys
     strip = None  
     try:
-        strip = WS2812(led_pin=26, led_count=6, order="GRB")
+        strip = WS2812()
         print("WS2812 initialization successful")
         print("Press Ctrl+C to exit program")
         

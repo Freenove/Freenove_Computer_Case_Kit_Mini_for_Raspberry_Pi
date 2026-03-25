@@ -61,26 +61,29 @@ class FanTab(QWidget):
             QPushButton {
                 background-color: #444444;
                 color: white;
-                border: 1px solid #555555;
-                border-radius: 5px;
+                border: none;
+                outline: none;
                 padding: 2px;
+                border-radius: 5px;
                 font-size: 14px;
                 font-weight: bold;
             }
             QPushButton:hover {
-                background-color: #555555;
+                background-color: #444444;
             }
             QPushButton:pressed {
                 background-color: #666666;
             }
         """
+        
         self.button_disabled_style = """
             QPushButton {
-                background-color: #333333;
+                background-color: #444444;
                 color: #888888;
-                border: 1px solid #555555;
-                border-radius: 5px;
+                border: none;
+                outline: none;
                 padding: 2px;
+                border-radius: 5px;
                 font-size: 14px;
                 font-weight: bold;
             }
@@ -135,7 +138,8 @@ class FanTab(QWidget):
         self.yellow_slider_style = self.slider_style_template % "#45B7D1"
         self.gray_slider_style = self.slider_style_template % "#555555"
 
-        self.save_params_button = None
+        self.start_task_button = None
+        self.stop_task_button = None
 
         self.init_ui()
         self.set_fan_mode(0)
@@ -178,11 +182,18 @@ class FanTab(QWidget):
         self.slider_area_layout.setStretch(2, 1)
         self.slider_area_layout.setStretch(3, 1)
 
-        self.save_params_button = QPushButton("Save Parameters")
-        self.save_params_button.setStyleSheet(self.button_style)
+        # Create start task button
+        self.start_task_button = QPushButton("Start Task")
+        self.start_task_button.setStyleSheet(self.button_style)
 
-        self.save_button_layout = QHBoxLayout()
-        self.save_button_layout.addWidget(self.save_params_button)
+        # Create stop task button
+        self.stop_task_button = QPushButton("Stop Task")
+        self.stop_task_button.setStyleSheet(self.button_style)
+
+        # Create layout for the buttons that matches other controls
+        self.button_layout = QHBoxLayout()
+        self.button_layout.addWidget(self.start_task_button)
+        self.button_layout.addWidget(self.stop_task_button)
 
         self.vbox_layout = QVBoxLayout()
         self.vbox_layout.setContentsMargins(20, 10, 20, 10)
@@ -190,15 +201,19 @@ class FanTab(QWidget):
         self.vbox_layout.addLayout(self.fan_mode_hbox_layout)
         self.slider_area_layout.setContentsMargins(0, 0, 0, 0)
         self.vbox_layout.addLayout(self.slider_area_layout)
-        self.vbox_layout.addLayout(self.save_button_layout)  
+        self.vbox_layout.addLayout(self.button_layout)  
         self.vbox_layout.setStretch(0,1)
         self.vbox_layout.setStretch(1,7)
         self.vbox_layout.setStretch(2,1)
 
         self.setLayout(self.vbox_layout)
         
-    def set_save_button_enabled(self, enabled):
-        self.enable_widget_with_style(self.save_params_button, self.button_style, self.button_disabled_style, enabled)
+    def set_start_task_button_enabled(self, enabled):
+        self.enable_widget_with_style(self.start_task_button, self.button_style, self.button_disabled_style, enabled)
+    
+    def set_stop_task_button_enabled(self, enabled):
+        self.enable_widget_with_style(self.stop_task_button, self.button_style, self.button_disabled_style, enabled)
+
 
     def create_temperature_controls(self, line_edit_style, button_style):
         self.fan_case_low_temp_label = QLabel("Low Temp")
@@ -486,7 +501,8 @@ class FanTab(QWidget):
             self.fan_case_high_speed_slider,
             self.fan_manual_slider_label, self.fan_manual_slider_value,
             self.fan_manual_slider,
-            self.save_params_button  
+            self.start_task_button,
+            self.stop_task_button
         ]
         
         for control in controls_to_resize:
@@ -559,7 +575,6 @@ class FanTab(QWidget):
         self.enable_widget_with_style(self.fan_manual_slider, self.yellow_slider_style, self.gray_slider_style, manual_mode_enabled)
         self.enable_widget_with_style(self.fan_manual_slider_value, self.slider_label_style, self.slider_label_disabled_style, manual_mode_enabled)
 
-        self.enable_widget_with_style(self.save_params_button, self.button_style, self.button_disabled_style, True)
     
     def on_temp_mode_low_speed_changed(self, value):
         self.fan_case_low_speed_slider_value.setText(str(value))

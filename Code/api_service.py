@@ -40,11 +40,19 @@ class ServiceGenerator:
             sys.exit(1)
             
     def create_my_service(self):
-        """Create systemd service file"""
-        if not self.current_directory or not self.current_username:
-            print("Error: Directory or username not set.")
-            sys.exit(1)
-            
+        if "led" in self.service_name.lower():
+            cpu_affinity = 1
+            cpu_priority = 80
+            nice_value = -19
+        elif "fan" in self.service_name.lower():
+            cpu_affinity = 0
+            cpu_priority = 60
+            nice_value = -10
+        else:
+            cpu_affinity = 0
+            cpu_priority = 50
+            nice_value = -15
+
         service_content = f"""[Unit]
 Description=My Python Script Service
 
@@ -55,10 +63,16 @@ StandardOutput=inherit
 StandardError=inherit
 Restart=always
 User={self.current_username}
+Nice={nice_value}
+CPUSchedulingPolicy=rr
+CPUSchedulingPriority={cpu_priority}
+MemoryLock=yes
+CPUAffinity={cpu_affinity}
 
 [Install]
 WantedBy=multi-user.target
 """
+    
         service_file_path = os.path.join('/etc/systemd/system/', self.service_name)
         if os.path.exists(service_file_path):
             os.remove(service_file_path)
@@ -79,7 +93,7 @@ WantedBy=multi-user.target
         return os.path.exists(service_file_path)
     
     def run_system_command(self, command):
-        """Execute system command using subprocess for better performance"""
+        """Execute system command and return detailed result object"""
         try:
             result = subprocess.run(
                 command,
@@ -89,18 +103,23 @@ WantedBy=multi-user.target
                 text=True,
                 timeout=30 
             )
-            if result.returncode != 0:
-                print(f"Error executing command: {command}")
-                print(f"Error output: {result.stderr}")
-                sys.exit(1)
-            return result.stdout
-        except subprocess.TimeoutExpired:
-            print(f"Command timed out: {command}")
-            sys.exit(1)
+            return result
+        except subprocess.TimeoutExpired as e:
+            class MockResult:
+                def __init__(self):
+                    self.returncode = -1
+                    self.stdout = ""
+                    self.stderr = str(e)
+                    self.args = command
+            return MockResult()
         except Exception as e:
-            print(f"Error executing command: {command}")
-            print(e)
-            sys.exit(1)
+            class MockResult:
+                def __init__(self):
+                    self.returncode = -1
+                    self.stdout = ""
+                    self.stderr = str(e)
+                    self.args = command
+            return MockResult()
             
     def remove_pycache_folder(self):
         """Remove __pycache__ folder"""
@@ -116,37 +135,50 @@ WantedBy=multi-user.target
         """Run service on Raspberry Pi - Optimized version"""
         self.check_target_py()  
         self.create_my_service()    
-        self.run_system_command("sudo systemctl daemon-reload")
-        self.run_system_command(f"sudo systemctl enable --now {self.service_name}")
+        reload_result = self.run_system_command("sudo systemctl daemon-reload")
+        enable_result = self.run_system_command(f"sudo systemctl enable --now {self.service_name}")
         self.remove_pycache_folder()
-    
+        return {
+            'reload_result': reload_result,
+            'enable_result': enable_result
+        }
+
     def delete_service_on_rpi(self):
         """Delete service on Raspberry Pi"""
-        self.run_system_command(f"sudo systemctl stop {self.service_name}")
+        stop_result = self.run_system_command(f"sudo systemctl stop {self.service_name}")
         self.delete_my_service()
-        self.run_system_command(f"sudo systemctl disable {self.service_name}")
+        disable_result = self.run_system_command(f"sudo systemctl disable {self.service_name}")
+        return {
+            'stop_result': stop_result,
+            'disable_result': disable_result
+        }
 
     def run_service_on_rpi(self):
         """Run service on Raspberry Pi"""
         if self.check_service_is_exist():
-            self.run_system_command(f"sudo systemctl start {self.service_name}")
+            start_result = self.run_system_command(f"sudo systemctl start {self.service_name}")
+            return start_result
         else:
             print(f"Error: {self.service_name} does not exist.")
+            return None
 
     def stop_service_on_rpi(self):
         """Stop service on Raspberry Pi"""
         if self.check_service_is_exist():
-            self.run_system_command(f"sudo systemctl stop {self.service_name}")
+            stop_result = self.run_system_command(f"sudo systemctl stop {self.service_name}")
+            return stop_result
         else:
             print(f"Error: {self.service_name} does not exist.")
+            return None
 
     def restart_service_on_rpi(self):
         """Restart service on Raspberry Pi - Optimized version"""
         if self.check_service_is_exist():
-
-            self.run_system_command(f"sudo systemctl restart {self.service_name}")
+            restart_result = self.run_system_command(f"sudo systemctl restart {self.service_name}")
+            return restart_result
         else:
             print(f"Error: {self.service_name} does not exist.")
+            return None
 
     def generate_and_run_service(self):
         """Execute complete service generation and run process"""
@@ -178,15 +210,17 @@ WantedBy=multi-user.target
         """Print shortcut command tips"""
         print("*"*50)
         print("Here are some shortcut commands.")
-        print("Create boot background task:          sudo systemctl enable my_app_running.service")
-        print("Disable boot background task:         sudo systemctl disable my_app_running.service")
-        print("Temporarily start background task:    sudo systemctl start my_app_running.service")
-        print("Temporarily stop background task:     sudo systemctl stop my_app_running.service")
-        print("Temporarily restart background task:  sudo systemctl restart my_app_running.service")
+        print(f"Create boot background task:          sudo systemctl enable {self.service_name}")
+        print(f"Disable boot background task:         sudo systemctl disable {self.service_name}")
+        print(f"Temporarily start background task:    sudo systemctl start {self.service_name}")
+        print(f"Temporarily stop background task:     sudo systemctl stop {self.service_name}")
+        print(f"Temporarily restart background task:  sudo systemctl restart {self.service_name}")
         print("*"*50)
         print("")
 
 # Usage example
 if __name__ == "__main__":
-    generator = ServiceGenerator()
-    #generator.generate_and_run_service()
+    generator_led = ServiceGenerator("task_led.py", "task_led.service")
+    generator_led.generate_and_run_service()
+    generator_fan = ServiceGenerator("task_fan.py", "task_fan.service")
+    generator_fan.generate_and_run_service()

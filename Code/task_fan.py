@@ -1,9 +1,12 @@
 import time
 import sys
+import signal
 
 class FAN_TASK:
-
     def __init__(self, config):
+        signal.signal(signal.SIGTERM, self.signal_handler)
+        signal.signal(signal.SIGINT, self.signal_handler)
+    
         self.pi_fan_mode = config.get('mode', 1)  # 0: manual, 1: temp, 2: code
         self.pi_fan_manual_mode_duty = config.get('manual_mode_duty', 255)  # 0-255
         self.pi_fan_temp_mode_threshold = config.get('temp_mode_config', {
@@ -29,7 +32,9 @@ class FAN_TASK:
         except Exception as e:
             print(f"Fan initialization failed: {e}")
             sys.exit(1)
-    
+    def signal_handler(self, signum, frame):
+        self.stop()
+        
     def _calculate_linear_duty(self, current_temp, low_threshold, high_threshold, min_duty, max_duty):
         temp_range = high_threshold - low_threshold
         duty_range = max_duty - min_duty
@@ -122,16 +127,21 @@ class FAN_TASK:
             2: self.fan_run_original_mode   # Code
         }
         
+        last_check_time = time.time()
+        check_interval = 2.0
+
         while True:
-            # Get corresponding function and execute
-            mode_func = mode_functions.get(self.pi_fan_mode, self.fan_run_original_mode)
-            if mode_func:
-                try:
-                    # Execute mode function
-                    mode_func()
-                except Exception as e:
-                    print(f"Error in fan mode function: {e}")
-            time.sleep(0.1)
+            current_time = time.time()
+            if current_time - last_check_time >= check_interval:
+                # Get corresponding function and execute
+                mode_func = mode_functions.get(self.pi_fan_mode, self.fan_run_original_mode)
+                if mode_func:
+                    try:
+                        # Execute mode function
+                        mode_func()
+                    except Exception as e:
+                        print(f"Error in fan mode function: {e}")
+            time.sleep(0.3)
     
     def stop(self):
         self.system_information.set_pi_pwm_duty(0)

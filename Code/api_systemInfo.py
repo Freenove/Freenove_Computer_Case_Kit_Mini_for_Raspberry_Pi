@@ -1,17 +1,22 @@
 import os
-import sys
 import time
 import psutil
-import atexit
-import signal
-import threading
 import datetime
 import socket
 
 class SystemInformation:
-
     def __init__(self):
         pass
+
+    def scan_oled_i2c_address_is_exists(self):
+        """Check if an OLED I2C address exists using i2cdetect command via os.popen"""
+        try:
+            with os.popen('i2cdetect -y 1') as f:
+                output = f.read()
+            clean_output = output.replace(' ', '').replace('-', '').replace('\n', '').lower()
+            return '3c' in clean_output or '3d' in clean_output
+        except Exception:
+            return False
 
     def get_raspberry_pi_ip_address(self):
         """Get the IP address of the Raspberry Pi"""
@@ -98,7 +103,6 @@ class SystemInformation:
             return [0, 0, 0]
 
     def get_raspberry_pi_fan_duty(self, max_retries=3, retry_delay=0.1):
-        """Get fan PWM using cached path and direct file read instead of subprocess"""
         for attempt in range(max_retries + 1):
             try:
                 base_path = '/sys/devices/platform/cooling_fan/hwmon/'
@@ -106,7 +110,6 @@ class SystemInformation:
                 if not hwmon_dirs:
                     raise FileNotFoundError("No hwmon directory found")
                 fan_input_path = os.path.join(base_path, hwmon_dirs[0], 'pwm1')
-                # Direct file read instead of subprocess
                 with open(fan_input_path, 'r') as f:
                     pwm_value = int(f.read().strip())
                     return max(0, min(255, pwm_value))  # Clamp between 0-255
@@ -136,14 +139,12 @@ class SystemInformation:
             os.system("sudo bash -c \'echo 'enabled' > /sys/class/thermal/thermal_zone0/mode\'")
             
     def set_pi_pwm_enable(self, enable=1):
-        """Set fan PWM enable/disable using direct file write instead of subprocess"""
         try:
             base_path = '/sys/devices/platform/cooling_fan/hwmon/'
             hwmon_dirs = [d for d in os.listdir(base_path) if d.startswith('hwmon')]
             if not hwmon_dirs:
                 raise FileNotFoundError("No hwmon directory found")
             pwm_enable_path = os.path.join(base_path, hwmon_dirs[0], 'pwm1_enable')
-            # Write directly to file instead of using subprocess
             os.system(f"sudo bash -c \'echo {enable} > {pwm_enable_path}\'")
         except (OSError, ValueError):
             return False
@@ -151,7 +152,6 @@ class SystemInformation:
             return False
 
     def set_pi_pwm_duty(self, duty=255):
-        """Set fan PWM duty cycle using direct file write instead of subprocess"""
         try:
             base_path = '/sys/devices/platform/cooling_fan/hwmon/'
             hwmon_dirs = [d for d in os.listdir(base_path) if d.startswith('hwmon')]
@@ -180,6 +180,10 @@ class SystemInformation:
 
 if __name__ == "__main__":
     system_information = SystemInformation()
+    if system_information.scan_oled_i2c_address_is_exists():
+        print("OLED I2C address exists")
+    else:
+        print("OLED I2C address does not exist")
 
     try:
         system_information.set_cpu_thermal_control(0)

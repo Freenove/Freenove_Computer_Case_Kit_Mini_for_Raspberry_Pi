@@ -3,7 +3,6 @@
 import os
 import sys
 import time
-import subprocess
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget
 from PyQt5.QtCore import Qt, QTimer
@@ -47,14 +46,13 @@ class MainWindow(QMainWindow):
             ('#333333', '#333333'),  # Gray
             ('#EAEA77', '#FFFFF0'),  # Yellow
             ('#4ECDC4', '#D1F0EE'),  # Blue-green
-            
             ('#F7DC6F', '#FBF5D9')   # Gold
         ]
         self.metric_labels = [
             "CPU Usage",     # CPU usage
             "RAM Usage",     # Memory usage
-            "CPU Temp",      # Raspberry Pi temperature
             "Storage Usage", # Storage usage
+            "CPU Temp",      # Raspberry Pi temperature
             "RPi PWM",       # Raspberry Pi fan PWM
             ""               # None
         ]
@@ -160,12 +158,14 @@ class MainWindow(QMainWindow):
         config_data = self.get_all_json_config()
         led_config = config_data.get('LED')
         fan_config = config_data.get('Fan')
+
         # Load LED configuration
         self.led_mode = led_config.get('mode', 6)
         self.led_slider_color[0] = led_config.get('red_value', 0)
         self.led_slider_color[1] = led_config.get('green_value', 0)
         self.led_slider_color[2] = led_config.get('blue_value', 255)
         self.led_brightness = led_config.get('brightness', 255)
+
         # Load Fan configuration - fix: Use correct section name 'Fan' instead of 'fan'
         self.fan_mode = fan_config.get('mode', 2)
         temp_config = fan_config.get('temp_mode_config', {})
@@ -190,11 +190,18 @@ class MainWindow(QMainWindow):
         self.fan_tab.set_case_weight_slider_value(self.fan_temp_mode_duty)
         self.fan_tab.set_manual_weight_slider_value(self.fan_manual_mode_duty)
 
-        # Create services on startup
-        self.led_service_generator.create_service_on_rpi()
-        self.fan_service_generator.create_service_on_rpi()
-        self.led_service_generator.restart_service_on_rpi()
-        self.fan_service_generator.restart_service_on_rpi()
+        self.led_tab.set_start_task_button_enabled(True)
+        self.fan_tab.set_start_task_button_enabled(True)
+
+        if self.led_service_generator.check_service_is_exist():
+            self.led_tab.set_stop_task_button_enabled(True)
+        else:
+            self.led_tab.set_stop_task_button_enabled(False)    
+        
+        if self.fan_service_generator.check_service_is_exist():
+            self.fan_tab.set_stop_task_button_enabled(True)
+        else:
+            self.fan_tab.set_stop_task_button_enabled(False)
         
     def load_ui_events(self):
         """Handle events"""
@@ -202,7 +209,6 @@ class MainWindow(QMainWindow):
             # Monitor interface signals and slot functions
             self.monitor_update_data_timer.timeout.connect(self.update_monitor_data_event)          # Connect to slot function
             self.monitor_update_data_timer.start(1000)                                              # Start timer, update data every second
-    
         # LED interface signals and slot functions
         for i in range(len(self.led_tab.led_mode_radio_buttons_names)):  
             self.led_tab.led_mode_radio_buttons[i].clicked.connect(self.led_radio_clicked_event)
@@ -210,7 +216,8 @@ class MainWindow(QMainWindow):
         self.led_tab.led_slider_green.sliderReleased.connect(self.led_slider_release_event)
         self.led_tab.led_slider_blue.sliderReleased.connect(self.led_slider_release_event)
         self.led_tab.led_brightness_slider.sliderReleased.connect(self.led_slider_release_event)
-        self.led_tab.save_params_button.clicked.connect(self.led_save_params_event)
+        self.led_tab.start_task_button.clicked.connect(self.led_start_task_event)
+        self.led_tab.stop_task_button.clicked.connect(self.led_stop_task_event)
     
         # Fan interface signals and slot functions
         for i in range(len(self.fan_tab.fan_mode_radio_buttons_names)):  
@@ -224,7 +231,8 @@ class MainWindow(QMainWindow):
         self.fan_tab.fan_case_low_speed_slider.sliderReleased.connect(self.fan_config_change_event)
         self.fan_tab.fan_case_high_speed_slider.sliderReleased.connect(self.fan_config_change_event)
         self.fan_tab.fan_manual_slider.sliderReleased.connect(self.fan_config_change_event)
-        self.fan_tab.save_params_button.clicked.connect(self.fan_save_params_event)
+        self.fan_tab.start_task_button.clicked.connect(self.fan_start_task_event)
+        self.fan_tab.stop_task_button.clicked.connect(self.fan_stop_task_event)
 
     # UI display related signals and slot functions
     def celsius_to_fahrenheit(self, celsius):
@@ -252,14 +260,14 @@ class MainWindow(QMainWindow):
             # Memory usage
             self.monitoring_tab.setCircleProgressValue(1, ram_usage, self.metric_labels[1], f"{ram_usage:.1f}%")
 
+            # Storage usage
+            self.monitoring_tab.setCircleProgressValue(2, disk_usage, self.metric_labels[2], f"{disk_usage:.1f}%")
+
             # Raspberry Pi temperature 
             if self.convert_to_fahrenheit == False:
-                self.monitoring_tab.setCircleProgressValue(2, min(100, rpi_temp/80*100), self.metric_labels[2], f"{rpi_temp:.1f}°C")
+                self.monitoring_tab.setCircleProgressValue(3, min(100, rpi_temp/80*100), self.metric_labels[3], f"{rpi_temp:.1f}°C")
             else:
-                self.monitoring_tab.setCircleProgressValue(2, min(100, rpi_temp/80*100), self.metric_labels[2], f"{rpi_temp_fahrenheit:.1f}°F")
-            
-            # Storage usage
-            self.monitoring_tab.setCircleProgressValue(3, disk_usage, self.metric_labels[3], f"{disk_usage:.1f}%")
+                self.monitoring_tab.setCircleProgressValue(3, min(100, rpi_temp/80*100), self.metric_labels[3], f"{rpi_temp_fahrenheit:.1f}°F")
             
             # Raspberry Pi fan PWM (0-255 range)
             rpi_fan_percent = (rpi_fan_pwm / 255) * 100 if rpi_fan_pwm >= 0 else 0
@@ -318,17 +326,52 @@ class MainWindow(QMainWindow):
             ('LED', 'brightness', self.led_brightness)
         ]
         self.set_all_json_config(led_config)
-        
-    def led_save_params_event(self):
-        """Handle save config button click event"""
+
+    def led_start_task_event(self):
+        """Handle start task button click event"""
         try:
-            self.led_service_generator.restart_service_on_rpi()
-            self.led_tab.set_save_button_enabled(False)
-            time.sleep(1)
-            self.led_tab.set_save_button_enabled(True)
-        except:
-            pass
-    
+            self.led_tab.set_start_task_button_enabled(False)
+            if self.led_service_generator.check_service_is_exist() == True:
+                restart_result = self.led_service_generator.restart_service_on_rpi()
+                if restart_result and restart_result.returncode == 0:
+                    print("LED service restarted successfully")
+                else:
+                    print(f"LED service restart failed: {restart_result.stderr if restart_result else 'Unknown error'}")
+            else:
+                create_result = self.led_service_generator.create_service_on_rpi()
+                if create_result and all(
+                    result.returncode == 0 for result in create_result.values() 
+                    if hasattr(result, 'returncode')
+                ):
+                    print("LED service created successfully")
+                else:
+                    print("LED service creation failed")
+            self.led_tab.set_start_task_button_enabled(True)
+            self.led_tab.set_stop_task_button_enabled(True)
+        except Exception as e:
+            print(f"Error starting LED task: {e}")
+            self.led_tab.set_start_task_button_enabled(True)
+            self.led_tab.set_stop_task_button_enabled(False)
+
+    def led_stop_task_event(self):
+        """Handle stop task button click event"""
+        try:
+            self.led_tab.set_stop_task_button_enabled(False)
+            self.led_tab.set_led_mode(8)
+            if self.led_service_generator.check_service_is_exist() == True:
+                stop_result = self.led_service_generator.stop_service_on_rpi()
+                if stop_result and stop_result.returncode == 0:
+                    print("LED service stopped successfully")
+                    delete_result = self.led_service_generator.delete_service_on_rpi()
+                    if delete_result and 'stop_result' in delete_result and delete_result['stop_result'].returncode == 0:
+                        print("LED service deleted successfully")
+                    else:
+                        print(f"LED service deletion failed: {delete_result}")
+                else:
+                    print(f"LED service stop failed: {stop_result.stderr if stop_result else 'Unknown error'}")
+        except Exception as e:
+            print(f"Error stopping LED task: {e}")
+
     # FAN interface signals and slot functions
     def fan_radio_clicked_event(self):
         """Handle FAN mode switch event"""
@@ -379,15 +422,51 @@ class MainWindow(QMainWindow):
         ]
         self.set_all_json_config(fan_config)
         
-    def fan_save_params_event(self):
-        """Handle save config button click event"""
+    def fan_start_task_event(self):
+        """Handle start task button click event"""
+        try: 
+            self.fan_tab.set_start_task_button_enabled(False)
+            if self.fan_service_generator.check_service_is_exist() == True:
+                restart_result = self.fan_service_generator.restart_service_on_rpi()
+                if restart_result and restart_result.returncode == 0:
+                    print("Fan service restarted successfully")
+                else:
+                    print(f"Fan service restart failed: {restart_result.stderr if restart_result else 'Unknown error'}")
+            else:
+                create_result = self.fan_service_generator.create_service_on_rpi()
+                if create_result and all(
+                    result.returncode == 0 for result in create_result.values() 
+                    if hasattr(result, 'returncode')
+                ):
+                    print("Fan service created successfully")
+                else:
+                    print("Fan service creation failed")
+            self.fan_tab.set_start_task_button_enabled(True)
+            self.fan_tab.set_stop_task_button_enabled(True)
+        except Exception as e:
+            print(f"Error starting fan task: {e}")
+            self.fan_tab.set_start_task_button_enabled(True)
+            self.fan_tab.set_stop_task_button_enabled(False)
+
+    def fan_stop_task_event(self):
+        """Handle stop task button click event"""
         try:
-            self.fan_service_generator.restart_service_on_rpi()
-            self.fan_tab.set_save_button_enabled(False)
-            time.sleep(1)
-            self.fan_tab.set_save_button_enabled(True)
-        except:
-            pass
+            self.fan_tab.set_stop_task_button_enabled(False)
+            self.fan_tab.set_fan_mode(2)
+            if self.fan_service_generator.check_service_is_exist() == True:
+                stop_result = self.fan_service_generator.stop_service_on_rpi()
+                if stop_result and stop_result.returncode == 0:
+                    print("Fan service stopped successfully")
+                    delete_result = self.fan_service_generator.delete_service_on_rpi()
+                    if delete_result and 'stop_result' in delete_result and delete_result['stop_result'].returncode == 0:
+                        print("Fan service deleted successfully")
+                    else:
+                        print(f"Fan service deletion failed: {delete_result}")
+                else:
+                    print(f"Fan service stop failed: {stop_result.stderr if stop_result else 'Unknown error'}")
+            
+        except Exception as e:
+            print(f"Error stopping fan task: {e}")
 
     def get_all_json_config(self):
         config_manager = ConfigManager()
@@ -404,18 +483,18 @@ class MainWindow(QMainWindow):
         if self.is_show_monitor_ui and self.monitor_update_data_timer_is_running:  # If timer is running, stop timer and save config
             self.monitor_update_data_timer.stop()
             self.monitor_update_data_timer_is_running = False
-        try:
-            self.led_service_generator.restart_service_on_rpi()
-            if self.led_mode == 8:
-                time.sleep(0.5)
-                self.led_service_generator.stop_service_on_rpi()
+        # try:
+        #     self.led_service_generator.restart_service_on_rpi()
+        #     if self.led_mode == 8:
+        #         time.sleep(0.5)
+        #         self.led_service_generator.stop_service_on_rpi()
                 
-            self.fan_service_generator.restart_service_on_rpi()
-            if self.fan_mode == 2:
-                time.sleep(0.5)
-                self.fan_service_generator.stop_service_on_rpi()
-        except:
-            pass
+        #     self.fan_service_generator.restart_service_on_rpi()
+        #     if self.fan_mode == 2:
+        #         time.sleep(0.5)
+        #         self.fan_service_generator.stop_service_on_rpi()
+        # except:
+        #     pass
         os.system('sudo rm __pycache__ -rf')
         event.accept()
         
