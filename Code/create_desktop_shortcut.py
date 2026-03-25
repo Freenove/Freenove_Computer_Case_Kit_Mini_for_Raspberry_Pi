@@ -78,7 +78,6 @@ Categories=Application;Development;
             if run_script_path:
                 # Also make the run_app.sh script executable
                 os.chmod(run_script_path, 0o755)
-            print(f"File set as executable: {file_path}")
         except Exception as e:
             raise Exception(f"Error setting file permissions: {e}")
     
