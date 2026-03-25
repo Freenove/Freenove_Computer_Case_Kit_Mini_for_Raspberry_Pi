@@ -151,7 +151,36 @@ URL={os.path.join(os.path.expanduser('~/.local/share/applications/'), f'{target_
         except Exception as e:
             print(f"Operation failed: {e}")
             return False
-        
+    
+    def remove_shortcut_from_desktop(self, target_filename=None):
+        """Remove desktop link shortcut from desktop"""
+        try:
+            # Get desktop path
+            desktop_dir = self._get_desktop_path()
+            
+            # Use provided target filename or default to current name
+            if target_filename:
+                target_name = target_filename.replace(' ', '_')
+            else:
+                target_name = self.name.replace(' ', '_')
+            
+            # Path to the file on desktop
+            desktop_path = os.path.join(desktop_dir, f"{target_name}.desktop")
+            
+            # Check if file exists before attempting to remove
+            if os.path.exists(desktop_path):
+                # Remove file using os.remove
+                os.remove(desktop_path)
+                print(f"Successfully removed desktop file from desktop: {desktop_path}")
+                return True
+            else:
+                print(f"Desktop file does not exist on desktop: {desktop_path}")
+                return False
+                
+        except Exception as e:
+            print(f"Error removing desktop file from desktop: {e}")
+            return False
+
     def create_application_to_programming(self, target_filename=None):
         """Create application desktop file directly in applications folder"""
         try:
@@ -227,11 +256,8 @@ URL={os.path.join(os.path.expanduser('~/.local/share/applications/'), f'{target_
 
 if __name__ == "__main__":
     creator = DesktopShortcutCreator("FNK0108", "Freenove Computer Case Kit Mini for Raspberry Pi")
-    
-    # Optionally copy to applications folder with optional target filename
-    creator.remove_application_from_programming()
+    #creator.remove_application_from_programming()
     creator.create_application_to_programming()
-
+    #creator.remove_shortcut_from_desktop()
     creator.create_shortcut_to_desktop()
-
     sys.exit(0)
