@@ -58,8 +58,8 @@ class DesktopShortcutCreator:
         
         return run_script_path, icon_path
     
-    def _create_desktop_content(self, run_script_path, icon_path):
-        """Create desktop file content"""
+    def _create_application_content(self, run_script_path, icon_path):
+        """Create Application-type desktop file content"""
         return f"""[Desktop Entry]
 Version=1.0
 Type=Application
@@ -72,7 +72,7 @@ Categories=Application;Development;
 """
     
     def _make_executable(self, file_path, run_script_path=None):
-        """Make file executable"""
+        """Make file executable, optionally also make the run script executable"""
         try:
             os.chmod(file_path, 0o755)
             if run_script_path:
@@ -99,42 +99,49 @@ Categories=Application;Development;
                 print(f"Warning: Failed to remove __pycache__ folder: {e}")
     
     def create_shortcut_to_desktop(self, target_filename=None):
-        """Create desktop shortcut directly to desktop without temporary file"""
+        """Create a desktop link shortcut (Type=Link) directly on the desktop"""
         try:
             # Get desktop path
             desktop_dir = self._get_desktop_path()
-            
+
             # Ensure desktop directory exists and is writable
             self._ensure_desktop_directory(desktop_dir)
-            
+
             # Use provided target filename or default to current name
             if target_filename:
                 target_name = target_filename.replace(' ', '_')
             else:
                 target_name = self.name.replace(' ', '_')
-            
+
             # Validate required files
             run_script_path, icon_path = self._validate_files()
-            
-            # Create desktop file content
-            desktop_content = self._create_desktop_content(run_script_path, icon_path)
-            
+
+            # Create desktop file content with Type=Link
+            application_content = f"""[Desktop Entry]
+Version=1.0
+Type=Link
+Name={self.name}
+Comment={self.comment}
+Icon={icon_path}
+URL={os.path.join(os.path.expanduser('~/.local/share/applications/'), f'{target_name}.desktop')}
+"""
+
             # Destination path on desktop
             destination_path = os.path.join(desktop_dir, f"{target_name}.desktop")
-            
+
             # Write desktop file directly to desktop
             try:
                 with open(destination_path, 'w', encoding='utf-8') as f:
-                    f.write(desktop_content)
-                print(f"Created desktop file directly on desktop: {destination_path}")
+                    f.write(application_content)
+                print(f"Created desktop link file directly on desktop: {destination_path}")
             except Exception as e:
                 raise Exception(f"Error creating desktop file: {e}")
-            
+
             # Make the file executable
-            self._make_executable(destination_path, run_script_path)
-                
+            self._make_executable(destination_path)
+
             return True
-            
+
         except FileNotFoundError as e:
             print(f"File not found error: {e}")
             return False
@@ -145,37 +152,8 @@ Categories=Application;Development;
             print(f"Operation failed: {e}")
             return False
         
-    def remove_shortcut_from_desktop(self, target_filename=None):
-        """Remove desktop file from desktop"""
-        try:
-            # Get desktop path
-            desktop_dir = self._get_desktop_path()
-            
-            # Use provided target filename or default to current name
-            if target_filename:
-                target_name = target_filename.replace(' ', '_')
-            else:
-                target_name = self.name.replace(' ', '_')
-            
-            # Path to the file on desktop
-            dest_path = os.path.join(desktop_dir, f"{target_name}.desktop")
-            
-            # Check if file exists before attempting to remove
-            if os.path.exists(dest_path):
-                # Remove file using os.remove
-                os.remove(dest_path)
-                print(f"Successfully removed desktop file from desktop: {dest_path}")
-                return True
-            else:
-                print(f"Desktop file does not exist on desktop: {dest_path}")
-                return False
-                
-        except Exception as e:
-            print(f"Error removing desktop file from desktop: {e}")
-            return False
-
-    def create_shortcut_to_programming(self, target_filename=None):
-        """Create desktop file directly in applications folder"""
+    def create_application_to_programming(self, target_filename=None):
+        """Create application desktop file directly in applications folder"""
         try:
             # Use provided target filename or default to current name
             if target_filename:
@@ -187,7 +165,7 @@ Categories=Application;Development;
             run_script_path, icon_path = self._validate_files()
             
             # Create desktop file content
-            desktop_content = self._create_desktop_content(run_script_path, icon_path)
+            application_content = self._create_application_content(run_script_path, icon_path)
             
             # Destination path (in applications folder)
             dest_dir = os.path.expanduser(f"~/.local/share/applications/")
@@ -199,7 +177,7 @@ Categories=Application;Development;
             # Write desktop file directly to applications folder
             try:
                 with open(dest_path, 'w', encoding='utf-8') as f:
-                    f.write(desktop_content)
+                    f.write(application_content)
                 print(f"Created desktop file directly in applications folder: {dest_path}")
             except Exception as e:
                 raise Exception(f"Error creating desktop file: {e}")
@@ -219,8 +197,8 @@ Categories=Application;Development;
             print(f"Operation failed: {e}")
             return False
     
-    def remove_shortcut_from_programming(self, target_filename=None):
-        """Remove desktop file from applications folder"""
+    def remove_application_from_programming(self, target_filename=None):
+        """Remove application desktop file from applications folder"""
         try:
             # Use provided target filename or default to current name
             if target_filename:
@@ -250,10 +228,10 @@ Categories=Application;Development;
 if __name__ == "__main__":
     creator = DesktopShortcutCreator("FNK0108", "Freenove Computer Case Kit Mini for Raspberry Pi")
     
-    # Create shortcut on desktop with optional target filename
-    creator.create_shortcut_to_desktop()
-    
     # Optionally copy to applications folder with optional target filename
-    creator.create_shortcut_to_programming()
+    creator.remove_application_from_programming()
+    creator.create_application_to_programming()
+
+    creator.create_shortcut_to_desktop()
 
     sys.exit(0)
