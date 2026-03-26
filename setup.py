@@ -90,7 +90,7 @@ def main():
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
     code_dir = os.path.join(script_dir, "Code")
-    run_command(f"cd {code_dir} && sudo python create_desktop_shortcut.py")
+    run_command(f"cd {code_dir} && python create_desktop_shortcut.py")
 
 
 if __name__ == "__main__":
