@@ -160,7 +160,7 @@ class MainWindow(QMainWindow):
         fan_config = config_data.get('Fan')
 
         # Load LED configuration
-        self.led_mode = led_config.get('mode', 6)
+        self.led_mode = led_config.get('mode', 0)
         self.led_slider_color[0] = led_config.get('red_value', 0)
         self.led_slider_color[1] = led_config.get('green_value', 0)
         self.led_slider_color[2] = led_config.get('blue_value', 255)
