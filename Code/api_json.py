@@ -133,7 +133,7 @@ class ConfigManager:
 
     def create_config_file(self):
         # Initialize default values based on actual usage in app_ui.py
-        led_mode_default = 6
+        led_mode_default = 0
         fan_mode_default = 2
         try:
             if not os.path.exists(self.config_file):
