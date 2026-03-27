@@ -33,7 +33,7 @@ project = "fnk0108-docs"
 # <!!!BEGIN!!!>
 from docutils import nodes
 
-copyright = '2016-2025, Freenove'
+copyright = '2016-2026, Freenove'
 author = 'Freenove'
 release = 'v1.0.0'
 version = 'v1.0.0'

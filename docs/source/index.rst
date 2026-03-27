@@ -33,4 +33,6 @@ This product provides the following online documents.
    :maxdepth: 1
    :caption: FNK0108
 
-   fnk0108/codes/Mini.rst
+   fnk0108/codes/Install.rst
+   fnk0108/codes/Base.rst
+   fnk0108/codes/Pro.rst
