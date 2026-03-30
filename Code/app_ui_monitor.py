@@ -22,7 +22,6 @@ class CircleProgressWidget(QWidget):
         self.display_text_color = QColor('#FFFFFF')  
 
     def paintEvent(self, event):
-        """绘制事件处理器"""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)  
         painter.setRenderHint(QPainter.TextAntialiasing)  
@@ -71,9 +70,6 @@ class CircleProgressWidget(QWidget):
 
     def draw_progress(self, percentage, label="", display_text=None, label_color=QColor('#FFFFFF'),
                       display_text_color=QColor('#FFFFFF')):
-        """
-        更新进度条显示
-        """
         self.percentage = max(0, min(100, percentage))  
         self.label_text = label
         self.display_text = display_text
@@ -82,7 +78,6 @@ class CircleProgressWidget(QWidget):
         self.update()  
 
     def set_position(self, x, y):
-        """设置控件位置"""
         self.move(x, y)
 
 

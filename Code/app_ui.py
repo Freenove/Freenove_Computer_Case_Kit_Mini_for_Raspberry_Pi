@@ -2,7 +2,6 @@
 # app_ui.py
 import os
 import sys
-import time
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget
 from PyQt5.QtCore import Qt, QTimer
@@ -10,6 +9,7 @@ from PyQt5.QtCore import Qt, QTimer
 from app_ui_monitor import MonitoringTab             # Import monitoring interface
 from app_ui_led import LedTab                        # Import LED interface
 from app_ui_fan import FanTab                        # Import fan control interface
+from app_ui_oled import OledTab                      # Import OLED interface
 
 from api_json import ConfigManager                   # Import configuration management module
 from api_systemInfo import SystemInformation         # Import system information module
@@ -26,6 +26,8 @@ class MainWindow(QMainWindow):
         self.system_info = SystemInformation()                                   # Create system information object
         self.convert_to_fahrenheit = False                                       # Whether to convert to Fahrenheit
         self.is_show_monitor_ui = True                                           # Whether to show monitoring interface
+
+        self.oled_is_exists = self.system_info.scan_oled_i2c_address_is_exists()
         
         # Create two service generator instances for LED and FAN respectively
         self.led_service_generator = ServiceGenerator(
@@ -73,10 +75,19 @@ class MainWindow(QMainWindow):
         self.fan_temp_mode_threshold = [30, 50, 3]                   # Fan temperature mode threshold parameters
         self.fan_temp_mode_duty = [75, 125, 175]                     # Fan temperature mode duty cycle parameters
 
+        if self.oled_is_exists:
+            self.oled_service_generator = ServiceGenerator(
+                filename="task_oled.py",
+                service_name="task_oled.service"
+            )
+            self.oled_tab = None
+            self.oled_screen_interchange = [0, 0, 0, 0]
+            self.oled_screen_display_time = [3, 3, 3]
+            self.oled_screen_is_run_on_oled = [True, True, True]
+
         self.init_ui()                                               # Initialize UI
         self.load_ui_config()                                        # Load UI parameters
         self.load_ui_events()                                        # Set events
-
     def init_ui(self):
         # Set black background for main window
         self.setStyleSheet("""
@@ -129,9 +140,14 @@ class MainWindow(QMainWindow):
             }
         """)
 
+        if self.oled_is_exists:
+            # Create OLED tab
+            self.oled_tab = OledTab(self.width(), self.height())
+            self.oled_tab.setFocusPolicy(Qt.NoFocus)
+            self.tab_widget.addTab(self.oled_tab, "OLED")
+
         # Set central widget
         self.setCentralWidget(self.tab_widget)
-        
     def load_ui_config(self):
         """Load configuration"""
         self.showMaximized()
@@ -203,6 +219,36 @@ class MainWindow(QMainWindow):
         else:
             self.fan_tab.set_stop_task_button_enabled(False)
         
+        if self.oled_is_exists:
+            oled_config = config_data.get('OLED')
+            screen1_config = oled_config.get('screen1', {})
+            screen2_config = oled_config.get('screen2', {})
+            screen3_config = oled_config.get('screen3', {})
+            self.oled_screen_interchange[0] = screen1_config.get('data_format', 0)
+            self.oled_screen_interchange[1] = screen1_config.get('time_format', 0)
+            self.oled_screen_interchange[2] = screen2_config.get('interchange', 0)
+            self.oled_screen_interchange[3] = screen3_config.get('interchange', 0)
+            self.oled_screen_display_time[0] = screen1_config.get('display_time', 3.0)
+            self.oled_screen_display_time[1] = screen2_config.get('display_time', 3.0)
+            self.oled_screen_display_time[2] = screen3_config.get('display_time', 3.0)
+            self.oled_screen_is_run_on_oled[0] = screen1_config.get('is_run_on_oled', True)
+            self.oled_screen_is_run_on_oled[1] = screen2_config.get('is_run_on_oled', True)
+            self.oled_screen_is_run_on_oled[2] = screen3_config.get('is_run_on_oled', True)
+
+            self.oled_tab.screen1_data_format_combo.setCurrentIndex(self.oled_screen_interchange[0])
+            self.oled_tab.screen1_time_format_combo.setCurrentIndex(self.oled_screen_interchange[1])
+            self.oled_tab.screen2_interchange_combo.setCurrentIndex(self.oled_screen_interchange[2])    
+            self.oled_tab.screen3_interchange_combo.setCurrentIndex(self.oled_screen_interchange[3])
+            for i in range(3):
+                self.oled_tab.set_display_time_label(i, self.oled_screen_display_time[i])
+            self.oled_tab.screen1_checkbox.setChecked(self.oled_screen_is_run_on_oled[0])
+            self.oled_tab.screen2_checkbox.setChecked(self.oled_screen_is_run_on_oled[1])
+            self.oled_tab.screen3_checkbox.setChecked(self.oled_screen_is_run_on_oled[2])
+
+            if self.oled_service_generator.check_service_is_exist():
+                self.oled_tab.set_stop_task_button_enabled(True)
+            else:
+                self.oled_tab.set_stop_task_button_enabled(False)    
     def load_ui_events(self):
         """Handle events"""
         if self.is_show_monitor_ui:
@@ -233,6 +279,40 @@ class MainWindow(QMainWindow):
         self.fan_tab.fan_manual_slider.sliderReleased.connect(self.fan_config_change_event)
         self.fan_tab.start_task_button.clicked.connect(self.fan_start_task_event)
         self.fan_tab.stop_task_button.clicked.connect(self.fan_stop_task_event)
+
+        if self.oled_is_exists:
+            # OLED interface signals and slot functions
+            self.oled_tab.screen1_checkbox.clicked.connect(self.oled_screen1_checkbox_event)
+            self.oled_tab.screen2_checkbox.clicked.connect(self.oled_screen2_checkbox_event)
+            self.oled_tab.screen3_checkbox.clicked.connect(self.oled_screen3_checkbox_event)
+            self.oled_tab.screen1_data_format_combo.currentIndexChanged.connect(self.oled_screen1_data_format_combo_event)
+            self.oled_tab.screen1_time_format_combo.currentIndexChanged.connect(self.oled_screen1_time_format_combo_event)
+            self.oled_tab.screen2_interchange_combo.currentIndexChanged.connect(self.oled_screen2_interchange_combo_event)
+            self.oled_tab.screen3_interchange_combo.currentIndexChanged.connect(self.oled_screen3_interchange_combo_event)
+            self.oled_tab.screen_display_time_minus_btn.clicked.connect(self.oled_screen_display_time_minus_btn_event)
+            self.oled_tab.screen_display_time_plus_btn.clicked.connect(self.oled_screen_display_time_plus_btn_event)
+            self.oled_tab.start_task_button.clicked.connect(self.oled_start_task_event)
+            self.oled_tab.stop_task_button.clicked.connect(self.oled_stop_task_event)
+    def closeEvent(self, event):
+        """Handle window close event"""
+        if self.is_show_monitor_ui and self.monitor_update_data_timer_is_running:  # If timer is running, stop timer and save config
+            self.monitor_update_data_timer.stop()
+            self.monitor_update_data_timer_is_running = False
+        os.system('sudo rm __pycache__ -rf')
+        if self.led_service_generator.check_service_is_exist():
+            self.led_service_generator.restart_service_on_rpi()
+        if self.fan_service_generator.check_service_is_exist():
+            self.fan_service_generator.restart_service_on_rpi()
+        if self.oled_service_generator.check_service_is_exist():
+            self.oled_service_generator.restart_service_on_rpi()
+        event.accept()
+    def keyPressEvent(self, event):
+        """Handle keyboard key press events"""
+        # Check if Ctrl+C is pressed
+        if event.key() == Qt.Key_C and event.modifiers() == Qt.ControlModifier:
+            self.close()  # Trigger window close
+        else:
+            super().keyPressEvent(event)  # Call parent class keyboard event handler
 
     # UI display related signals and slot functions
     def celsius_to_fahrenheit(self, celsius):
@@ -275,7 +355,6 @@ class MainWindow(QMainWindow):
         
         except Exception as e:
             print(f"Error updating data: {e}")
-
     def update_monitor_colors_event(self):
         """Periodically update LED colors to circular progress bars"""
         try:
@@ -309,7 +388,6 @@ class MainWindow(QMainWindow):
             ('LED', 'brightness', self.led_brightness)
         ]
         self.set_all_json_config(led_config)
-        
     def led_slider_release_event(self):
         """Handle LED slider release event"""
         self.led_slider_color[0] = self.led_tab.led_slider_red.value()
@@ -326,7 +404,6 @@ class MainWindow(QMainWindow):
             ('LED', 'brightness', self.led_brightness)
         ]
         self.set_all_json_config(led_config)
-
     def led_start_task_event(self):
         """Handle start task button click event"""
         try:
@@ -352,7 +429,6 @@ class MainWindow(QMainWindow):
             print(f"Error starting LED task: {e}")
             self.led_tab.set_start_task_button_enabled(True)
             self.led_tab.set_stop_task_button_enabled(False)
-
     def led_stop_task_event(self):
         """Handle stop task button click event"""
         try:
@@ -399,7 +475,6 @@ class MainWindow(QMainWindow):
             ('Fan', 'temp_mode_config', temp_mode_config)
         ]
         self.set_all_json_config(fan_config)
-        
     def fan_config_change_event(self):
         self.fan_temp_mode_threshold[0] = int(self.fan_tab.fan_case_low_temp_input.text())
         self.fan_temp_mode_threshold[1] = int(self.fan_tab.fan_case_high_temp_input.text())
@@ -421,7 +496,6 @@ class MainWindow(QMainWindow):
             ('Fan', 'temp_mode_config', temp_config)
         ]
         self.set_all_json_config(fan_config)
-        
     def fan_start_task_event(self):
         """Handle start task button click event"""
         try: 
@@ -447,7 +521,6 @@ class MainWindow(QMainWindow):
             print(f"Error starting fan task: {e}")
             self.fan_tab.set_start_task_button_enabled(True)
             self.fan_tab.set_stop_task_button_enabled(False)
-
     def fan_stop_task_event(self):
         """Handle stop task button click event"""
         try:
@@ -468,45 +541,248 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print(f"Error stopping fan task: {e}")
 
+    # OLED interface signals and slot functions
+    def oled_screen_display_time_minus_btn_event(self):
+        """Handle OLED screen display time minus button event"""
+        checkboxes = [
+            self.oled_tab.screen1_checkbox,
+            self.oled_tab.screen2_checkbox,
+            self.oled_tab.screen3_checkbox,
+        ]
+
+        # Get complete configuration data
+        config_data = self.get_all_json_config()
+        oled_config = config_data.get('OLED', {})
+
+        # Iterate through checkboxes to find the selected screen
+        for i, checkbox in enumerate(checkboxes):
+            if checkbox.isChecked(): 
+                screen_num = i + 1
+                screen_key = f'screen{screen_num}'
+                
+                # Get configuration for the corresponding screen
+                screen_config = oled_config.get(screen_key, {})
+                
+                # Get current display time and adjust it
+                current_time = screen_config.get('display_time', 3.0)
+                new_time = current_time - 0.5
+                if new_time <= 0:
+                    new_time = 0.5
+                
+                # Update configuration
+                screen_config['display_time'] = round(new_time, 1)
+                oled_config[screen_key] = screen_config
+                
+                # Update local variables and interface display
+                self.oled_screen_display_time[i] = new_time
+                self.oled_tab.set_display_time_label(i, new_time)
+        
+        # Directly replace the entire OLED section using the set_section method to maintain nested structure
+        config_manager = ConfigManager()
+        config_manager.set_section('OLED', oled_config)
+        config_manager.save_config()
+    def oled_screen_display_time_plus_btn_event(self):
+        """Handle OLED screen display time plus button event"""
+        checkboxes = [
+            self.oled_tab.screen1_checkbox,
+            self.oled_tab.screen2_checkbox,
+            self.oled_tab.screen3_checkbox,
+        ]
+        
+        # Get complete configuration data
+        config_data = self.get_all_json_config()
+        oled_config = config_data.get('OLED', {})
+
+        # Iterate through checkboxes to find the selected screen
+        for i, checkbox in enumerate(checkboxes):
+            if checkbox.isChecked(): 
+                screen_num = i + 1
+                screen_key = f'screen{screen_num}'
+                
+                # Get configuration for the corresponding screen
+                screen_config = oled_config.get(screen_key, {})
+                
+                # Get current display time and adjust it
+                current_time = screen_config.get('display_time', 3.0)
+                new_time = current_time + 0.5
+                screen_config['display_time'] = round(new_time, 1)
+                oled_config[screen_key] = screen_config
+                
+                # Update local variables and interface display
+                self.oled_screen_display_time[i] = new_time
+                self.oled_tab.set_display_time_label(i, new_time)
+        
+        # Directly replace the entire OLED section using the set_section method to maintain nested structure
+        config_manager = ConfigManager()
+        config_manager.set_section('OLED', oled_config)
+        config_manager.save_config()
+    def oled_screen1_checkbox_event(self):
+        """Handle OLED screen1 checkbox event"""
+        config_data = self.get_all_json_config()
+        oled_config = config_data.get('OLED', {})
+        screen1_config = oled_config.get('screen1', {})
+
+        is_checked = self.oled_tab.screen1_checkbox.isChecked()
+        self.oled_screen_is_run_on_oled[0] = is_checked
+        self.oled_tab.set_display_time_is_enabled(0, is_checked)
+        screen1_config['is_run_on_oled'] = is_checked
+        
+        # Update OLED configuration
+        oled_config['screen1'] = screen1_config
+
+        # Directly replace the entire OLED section using the set_section method to maintain nested structure
+        config_manager = ConfigManager()
+        config_manager.set_section('OLED', oled_config)
+        config_manager.save_config()
+    def oled_screen2_checkbox_event(self):
+        """Handle OLED screen2 checkbox event"""
+        config_data = self.get_all_json_config()
+        oled_config = config_data.get('OLED', {})
+        screen2_config = oled_config.get('screen2', {})
+
+        is_checked = self.oled_tab.screen2_checkbox.isChecked()
+        self.oled_screen_is_run_on_oled[1] = is_checked
+        self.oled_tab.set_display_time_is_enabled(1, is_checked)
+        screen2_config['is_run_on_oled'] = is_checked
+        
+        # Update OLED configuration
+        oled_config['screen2'] = screen2_config
+
+        # Directly replace the entire OLED section using the set_section method to maintain nested structure
+        config_manager = ConfigManager()
+        config_manager.set_section('OLED', oled_config)
+        config_manager.save_config()
+    def oled_screen3_checkbox_event(self):
+        """Handle OLED screen3 checkbox event"""
+        config_data = self.get_all_json_config()
+        oled_config = config_data.get('OLED', {})
+        screen3_config = oled_config.get('screen3', {})
+
+        is_checked = self.oled_tab.screen3_checkbox.isChecked()
+        self.oled_screen_is_run_on_oled[2] = is_checked
+        self.oled_tab.set_display_time_is_enabled(2, is_checked)
+        screen3_config['is_run_on_oled'] = is_checked
+        
+        # Update OLED configuration
+        oled_config['screen3'] = screen3_config
+
+        # Directly replace the entire OLED section using the set_section method to maintain nested structure
+        config_manager = ConfigManager()
+        config_manager.set_section('OLED', oled_config)
+        config_manager.save_config()
+    def oled_screen1_data_format_combo_event(self, index):
+        """Handle OLED screen1 data format combo box event"""
+        config_data = self.get_all_json_config()
+        oled_config = config_data.get('OLED', {})
+        screen1_config = oled_config.get('screen1', {})
+        self.oled_screen_interchange[0] = index
+        screen1_config['data_format'] = index
+        
+        # Update OLED configuration
+        oled_config['screen1'] = screen1_config
+
+        # Directly replace the entire OLED section using the set_section method to maintain nested structure
+        config_manager = ConfigManager()
+        config_manager.set_section('OLED', oled_config)
+        config_manager.save_config()
+    def oled_screen1_time_format_combo_event(self, index):
+        """Handle OLED screen1 time format combo box event"""
+        config_data = self.get_all_json_config()
+        oled_config = config_data.get('OLED', {})
+        screen1_config = oled_config.get('screen1', {})
+        self.oled_screen_interchange[1] = index
+        screen1_config['time_format'] = index
+        
+        # Update OLED configuration
+        oled_config['screen1'] = screen1_config
+
+        # Directly replace the entire OLED section using the set_section method to maintain nested structure
+        config_manager = ConfigManager()
+        config_manager.set_section('OLED', oled_config)
+        config_manager.save_config()
+    def oled_screen2_interchange_combo_event(self, index):
+        """Handle OLED screen2 interchange combo box event"""
+        config_data = self.get_all_json_config()
+        oled_config = config_data.get('OLED', {})
+        screen2_config = oled_config.get('screen2', {})
+        self.oled_screen_interchange[2] = index
+        screen2_config['interchange'] = index
+        
+        # Update OLED configuration
+        oled_config['screen2'] = screen2_config
+
+        # Directly replace the entire OLED section using the set_section method to maintain nested structure
+        config_manager = ConfigManager()
+        config_manager.set_section('OLED', oled_config)
+        config_manager.save_config()
+    def oled_screen3_interchange_combo_event(self, index):
+        """Handle OLED screen3 interchange combo box event"""
+        config_data = self.get_all_json_config()
+        oled_config = config_data.get('OLED', {})
+        screen3_config = oled_config.get('screen3', {})
+        self.oled_screen_interchange[3] = index
+        screen3_config['interchange'] = index
+        
+        # Update OLED configuration
+        oled_config['screen3'] = screen3_config
+
+        # Directly replace the entire OLED section using the set_section method to maintain nested structure
+        config_manager = ConfigManager()
+        config_manager.set_section('OLED', oled_config)
+        config_manager.save_config()
+    def oled_start_task_event(self):
+        """Handle start task button click event"""
+        try:
+            self.oled_tab.set_start_task_button_enabled(False)
+            if self.oled_service_generator.check_service_is_exist() == True:
+                restart_result = self.oled_service_generator.restart_service_on_rpi()
+                if restart_result and restart_result.returncode == 0:
+                    print("OLED service restarted successfully")
+                else:
+                    print(f"OLED service restart failed: {restart_result.stderr if restart_result else 'Unknown error'}")
+            else:
+                create_result = self.oled_service_generator.create_service_on_rpi()
+                if create_result and all(
+                    result.returncode == 0 for result in create_result.values() 
+                    if hasattr(result, 'returncode')
+                ):
+                    print("OLED service created successfully")
+                else:
+                    print("OLED service creation failed")
+            self.oled_tab.set_start_task_button_enabled(True)
+            self.oled_tab.set_stop_task_button_enabled(True)
+        except Exception as e:
+            print(f"Error starting OLED task: {e}")
+            self.oled_tab.set_start_task_button_enabled(True)
+            self.oled_tab.set_stop_task_button_enabled(False)
+    def oled_stop_task_event(self):
+        """Handle stop task button click event"""
+        try:
+            self.oled_tab.set_stop_task_button_enabled(False)
+            if self.oled_service_generator.check_service_is_exist() == True:
+                stop_result = self.oled_service_generator.stop_service_on_rpi()
+                if stop_result and stop_result.returncode == 0:
+                    print("OLED service stopped successfully")
+                    delete_result = self.oled_service_generator.delete_service_on_rpi()
+                    if delete_result and 'stop_result' in delete_result and delete_result['stop_result'].returncode == 0:
+                        print("OLED service deleted successfully")
+                    else:
+                        print(f"OLED service deletion failed: {delete_result}")
+                else:
+                    print(f"OLED service stop failed: {stop_result.stderr if stop_result else 'Unknown error'}")
+        except Exception as e:
+            print(f"Error stopping OLED task: {e}")
+
+    # JSON Configuration
     def get_all_json_config(self):
         config_manager = ConfigManager()
         return config_manager.get_all_config()
-        
     def set_all_json_config(self, config_data):
         config_manager = ConfigManager()
         for section, key, value in config_data:
             config_manager.set_value(section, key, value)
         config_manager.save_config()
         
-    def closeEvent(self, event):
-        """Handle window close event"""
-        if self.is_show_monitor_ui and self.monitor_update_data_timer_is_running:  # If timer is running, stop timer and save config
-            self.monitor_update_data_timer.stop()
-            self.monitor_update_data_timer_is_running = False
-        # try:
-        #     self.led_service_generator.restart_service_on_rpi()
-        #     if self.led_mode == 8:
-        #         time.sleep(0.5)
-        #         self.led_service_generator.stop_service_on_rpi()
-                
-        #     self.fan_service_generator.restart_service_on_rpi()
-        #     if self.fan_mode == 2:
-        #         time.sleep(0.5)
-        #         self.fan_service_generator.stop_service_on_rpi()
-        # except:
-        #     pass
-        os.system('sudo rm __pycache__ -rf')
-        event.accept()
-        
-    def keyPressEvent(self, event):
-        """Handle keyboard key press events"""
-        # Check if Ctrl+C is pressed
-        if event.key() == Qt.Key_C and event.modifiers() == Qt.ControlModifier:
-            self.close()  # Trigger window close
-        else:
-            super().keyPressEvent(event)  # Call parent class keyboard event handler
-
-
 if __name__ == "__main__":
     os.system('sudo chmod 700 /run/user/1000')
     app = QApplication(sys.argv)

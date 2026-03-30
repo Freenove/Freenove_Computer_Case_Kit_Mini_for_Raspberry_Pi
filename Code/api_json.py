@@ -158,6 +158,24 @@ class ConfigManager:
                             "fan_temp_mode_duty_low": 50,
                             "fan_temp_mode_duty_high": 200
                         }
+                    },
+                    "OLED": {
+                        "screen1": {
+                            "data_format": 0,
+                            "time_format": 0,
+                            "display_time": 3.0,
+                            "is_run_on_oled": True
+                        },
+                        "screen2": {
+                            "interchange": 0,
+                            "display_time": 3.0,
+                            "is_run_on_oled": True
+                        },
+                        "screen3": {
+                            "interchange": 0,
+                            "display_time": 3.0,
+                            "is_run_on_oled": True
+                        }
                     }
                 }
                 self.save_config()
@@ -201,8 +219,13 @@ if __name__ == '__main__':
     print(f"Fan config: {fan_config}")
     print()
 
+    print("Testing OLED configuration...")
+    oled_config = config_manager.get_section('OLED')
+    print(f"OLED config: {oled_config}")
+    print()
+
     print("Testing configuration modification...")
-    config_manager.set_value('LED', 'mode', 6)
+    config_manager.set_value('LED', 'mode', 0)
     config_manager.set_value('LED', 'brightness', 255)
     config_manager.set_value('LED', 'red_value', 0)
     config_manager.set_value('LED', 'green_value', 0)
