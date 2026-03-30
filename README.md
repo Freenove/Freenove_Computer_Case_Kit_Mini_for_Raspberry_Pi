@@ -42,21 +42,21 @@ For details, please refer to the table below.
 
 | no-built-in audio series             | NVMe Slot Count | SSD Support |
 |-------------|------------|--------------|
-| `FNK0107A`  | 1 Slot     | No          |
-| `FNK0107B`  | 2 Slots    | No          | 
-| `FNK0107C`  | 4 Slots    | No          |
-| `FNK0107H`  | 1 Slot     | 1 SSD       | 
-| `FNK0107K`  | 2 Slots    | 1 SSD       | 
-| `FNK0107L`  | 4 Slots    | 1 SSD       | 
+| `FNK0108A`  | 1 Slot     | No          |
+| `FNK0108B`  | 2 Slots    | No          | 
+| `FNK0108C`  | 4 Slots    | No          |
+| `FNK0108H`  | 1 Slot     | 1 SSD       | 
+| `FNK0108K`  | 2 Slots    | 1 SSD       | 
+| `FNK0108L`  | 4 Slots    | 1 SSD       | 
 
 | with built-in audio series       | NVMe Slot Count | SSD Support |
 |-------------|------------|--------------|
-| `FNK0107P`  | 1 Slot     | No          |
-| `FNK0107Q`  | 2 Slots    | No          | 
-| `FNK0107R`  | 4 Slots    | No          |
-| `FNK0107U`  | 1 Slot     | 1 SSD       | 
-| `FNK0107V`  | 2 Slots    | 1 SSD       | 
-| `FNK0107W`  | 4 Slots    | 1 SSD       | 
+| `FNK0108P`  | 1 Slot     | No          |
+| `FNK0108Q`  | 2 Slots    | No          | 
+| `FNK0108R`  | 4 Slots    | No          |
+| `FNK0108U`  | 1 Slot     | 1 SSD       | 
+| `FNK0108V`  | 2 Slots    | 1 SSD       | 
+| `FNK0108W`  | 4 Slots    | 1 SSD       | 
 
 ### Support
 
