@@ -87,7 +87,12 @@ def main():
         run_command("sudo apt install python3-pip")
     except Exception as e:
         print(f"Error occurred: {e}")
-
+        
+    try:
+        run_command("sudo apt install python3-luma.oled")
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        
     script_dir = os.path.dirname(os.path.abspath(__file__))
     code_dir = os.path.join(script_dir, "Code")
     run_command(f"cd {code_dir} && python create_desktop_shortcut.py")
