@@ -275,7 +275,7 @@ Or enter **router** client to **inquiry IP address** named **"raspberrypi"**. Fo
     
     ssh pi@xxxxxxxxxxx(IP address)
 
-Enter the following command：
+Enter the following command:
 
 .. code-block:: console
     

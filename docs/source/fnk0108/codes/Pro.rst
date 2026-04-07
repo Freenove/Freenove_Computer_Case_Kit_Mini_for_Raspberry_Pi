@@ -7,6 +7,7 @@ Pro
    :caption: Pro
    :glob:
 
+   Base/Important_Information.rst
    Pro/Preface.rst
    Pro/List.rst
    Pro/1_Introduction_to_Main_Components.rst

@@ -15,12 +15,12 @@ Please refer to the specific tutorial based on the product model you purchased.
 
 If your model is FNK0108A/B/C/H/K/L (shown below), follow the Base_Version_Tutorial.pdf (the current documentation) to assemble the product.
 
-.. image:: ../_static/imgs/welcome/welcome02.png
+.. image:: ../_static/imgs/Welcome/welcome02.png
     :align: center
 
 If your model is FNK0108P/Q/R/U/V/W (shown below), follow the “Pro_Version_Tutorial.pdf” file located in the same folder for assembly.
 
-.. image:: ../_static/imgs/welcome/welcome03.png
+.. image:: ../_static/imgs/Welcome/welcome03.png
     :align: center
 
 Get Support and Offer Input

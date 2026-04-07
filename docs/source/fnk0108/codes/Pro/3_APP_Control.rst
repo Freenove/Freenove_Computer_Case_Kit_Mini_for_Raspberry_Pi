@@ -198,9 +198,12 @@ Note: Only in **Breathing, Blink, Rotate, Following, Static** modes can the colo
 
 After selecting your preferred lighting effect, click the **“Start Task”** button. Both fans will then run with the chosen effect. To stop the lighting effect, click the **“Stop Task”** button.
 
+.. image:: ../_static/imgs/3_APP_Control/Chapter03_35.png
+    :align: center
+
 It is set to rainbow mode by default, as shown below.
 
-.. image:: ../_static/imgs/3_APP_Control/Chapter03_10.png
+.. image:: ../_static/imgs/3_APP_Control/Chapter03_36.png
     :align: center
 
 If the preset mode does not meet your need, you can modify the **led_run_code_mode** function in the **task_led.py** file under the “Freenove_Computer_Case_Kit_Mini_for_Raspberry_Pi/Code” directory.

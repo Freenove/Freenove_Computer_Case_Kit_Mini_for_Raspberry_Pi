@@ -6,10 +6,13 @@ Before powering on the Freenove Computer Case Kit Mini for Raspberry Pi, please 
 
 :red:`Due to its multiple functions, this case requires an adequate power supply. We highly recommend using the official Raspberry Pi 5.1V / 5A power adapter (https://www.raspberrypi.com/products/27w-power-supply ).`
 
-:red:`Failure to do so may result in the Freenove Computer Case Kit Pro for Raspberry Pi being unusable or causing damage to components.`
+:red:`Failure to do so may result in the Freenove Computer Case Kit Mini for Raspberry Pi being unusable or causing damage to components.`
 
 How to Insert and Take out SD Card
 ****************************************************
+
+.. image:: ../_static/imgs/3_APP_Control/Chapter03_34.png
+    :align: center
 
 Remove the SD card with the written system from the card reader. 
 
@@ -198,6 +201,9 @@ Note: Only in **Breathing, Blink, Rotate, Following, Static** modes can the colo
     :align: center
 
 After selecting your preferred lighting effect, click the **“Start Task”** button. Both fans will then run with the chosen effect. To stop the lighting effect, click the **“Stop Task”** button.
+
+.. image:: ../_static/imgs/3_APP_Control/Chapter03_35.png
+    :align: center
 
 It is set to rainbow mode by default, as shown below.
 
