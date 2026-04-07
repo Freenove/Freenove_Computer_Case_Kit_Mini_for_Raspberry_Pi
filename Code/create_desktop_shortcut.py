@@ -281,7 +281,13 @@ URL={url_path}
 
 
 if __name__ == "__main__":
-    creator = DesktopShortcutCreator("FNK0108", "Freenove Computer Case Kit Mini for Raspberry Pi")
+    from api_systemInfo import SystemInformation 
+    system_information = SystemInformation()
+    if system_information.scan_oled_i2c_address_is_exists():
+        creator = DesktopShortcutCreator("FNK0113", "Freenove Tower Cooler for Raspberry Pi")
+    else:
+        creator = DesktopShortcutCreator("FNK0108", "Freenove Computer Case Kit Mini for Raspberry Pi")
+
     #creator.remove_application_from_programming()
     creator.create_application_to_programming()
     #creator.remove_shortcut_from_desktop()
