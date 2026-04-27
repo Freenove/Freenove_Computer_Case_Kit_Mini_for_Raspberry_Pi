@@ -20,7 +20,15 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.ui_main_width = width
         self.ui_main_height = height
-        self.setWindowTitle("Freenove_Computer_Case_Kit_Mini_for_Raspberry_Pi")   # Set window title
+
+        config_manager = ConfigManager()
+        self.kit_type = config_manager.get_kit_type()
+        if self.kit_type == 1:
+            self.setWindowTitle("Freenove_Computer_Case_Kit_Mini_for_Raspberry_Pi")   # Set window title
+        elif self.kit_type == 2:
+            self.setWindowTitle("Freenove_Tower_Cooler_for_Raspberry_Pi")
+        else:
+            self.setWindowTitle("Freenove_Computer_Case_Kit_Mini_for_Raspberry_Pi")
         self.setGeometry(0, 0, self.ui_main_width, self.ui_main_height)          # Set window size
         self.setMinimumSize(self.ui_main_width, self.ui_main_height)             # Set minimum size
         self.system_info = SystemInformation()                                   # Create system information object

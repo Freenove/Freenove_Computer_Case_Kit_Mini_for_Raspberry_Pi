@@ -282,11 +282,12 @@ URL={url_path}
 
 
 if __name__ == "__main__":
-    from api_systemInfo import SystemInformation 
-    system_information = SystemInformation()
-    
-    # name must match the filename under picture/xpm/
-    if system_information.scan_oled_i2c_address_is_exists():
+    from api_json import ConfigManager
+    config_manager = ConfigManager()
+
+    if config_manager.get_kit_type() == 1:
+        creator = DesktopShortcutCreator("FNK0108", "Freenove Computer Case Kit Mini for Raspberry Pi")
+    elif config_manager.get_kit_type() == 2:
         creator = DesktopShortcutCreator("FNK0113", "Freenove Tower Cooler for Raspberry Pi")
     else:
         creator = DesktopShortcutCreator("FNK0108", "Freenove Computer Case Kit Mini for Raspberry Pi")

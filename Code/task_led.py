@@ -25,13 +25,15 @@ class LED_TASK:
         self.breathing_mode_step_length = 6
         
         try:
-            from api_systemInfo import SystemInformation
+            from api_json import ConfigManager
             from api_ws2812 import WS2812
-            self.oled_is_exists = SystemInformation().scan_oled_i2c_address_is_exists()
-            if not self.oled_is_exists:
+            config_manager = ConfigManager()
+            if config_manager.get_kit_type() == 1:
                 self.led_strip = WS2812(led_pin=26, led_count=6)
-            else:
+            elif config_manager.get_kit_type() == 2:
                 self.led_strip = WS2812(led_pin=4, led_count=6)
+            else:
+                self.led_strip = WS2812(led_pin=26, led_count=6)
             self.led_strip.setBrightness(self.pi_led_brightness)
         except Exception as e:
             print(f"LED initialization failed: {e}")
