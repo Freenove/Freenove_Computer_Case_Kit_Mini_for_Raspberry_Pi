@@ -155,7 +155,7 @@ class OledTab(QWidget):
                 width: 20px;
             }
             QComboBox::down-arrow {
-                image: url(./arrow-down.png);
+                image: url(./picture/arrow-down.png);
             }
             QComboBox QAbstractItemView {
                 text-align: center;
@@ -215,10 +215,6 @@ class OledTab(QWidget):
                 font-weight: bold;
             }
         """
-        
-        # Create main group box
-        self.main_groupbox = QGroupBox("OLED Settings")
-        self.main_groupbox.setStyleSheet(self.groupbox_style)
         
         # Create main layout - vertical layout for 6 containers
         self.main_layout = QVBoxLayout()
@@ -370,12 +366,9 @@ class OledTab(QWidget):
         self.container6.setLayout(self.container6_layout)
         self.main_layout.addWidget(self.container6)
 
-        # Set main layout to group box
-        self.main_groupbox.setLayout(self.main_layout)
-        
         # Set main window layout
         self.window_layout = QVBoxLayout()
-        self.window_layout.addWidget(self.main_groupbox)
+        self.window_layout.addLayout(self.main_layout)
         self.setLayout(self.window_layout)
     
     def set_display_time_label(self, index, value):
@@ -452,7 +445,6 @@ class OledTab(QWidget):
         # First adjust the main group box to fit the window
         main_width = self.width() - 40  # Consider window margins
         main_height = self.height() - 40  # Consider window margins
-        self.main_groupbox.setGeometry(10, 10, main_width, main_height) # Set the size of the main group box
 
         # Calculate available size for the group box content area (subtract group box margins)
         content_width = main_width - 20  # 10px left margin + 10px right margin
