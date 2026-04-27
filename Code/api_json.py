@@ -14,6 +14,8 @@ class ConfigManager:
         self.config_data = {}
         self.lock = threading.Lock() 
         self.load_config()
+        if self.get_kit_type() is None:
+            self.query_kit_type()
 
     def load_config(self):
         """
@@ -131,6 +133,61 @@ class ConfigManager:
         except Exception as e:
             print(f"Error deleting configuration file: {e}")
 
+    def get_kit_type(self):
+        """
+        Get kit type from configuration
+        
+        Returns:
+            int: Kit type (1 for FNK0108, 2 for FNK0113), None if not set
+        """
+        return self.get_value('General', 'kit_type')
+
+    def set_kit_type(self, kit_type):
+        """
+        Set kit type in configuration
+        
+        Args:
+            kit_type (int): Kit type (1 for FNK0108, 2 for FNK0113)
+        """
+        self.set_value('General', 'kit_type', kit_type)
+        self.save_config()
+
+    def query_kit_type(self):
+        """
+        Query user about which kit they have and save to configuration
+        
+        Returns:
+            int: Selected kit type (1 or 2)
+        """
+        while True:
+            print("\nPlease select your kit type:")
+            print("1. FNK0108: Freenove Computer Case Kit Mini for Raspberry Pi")
+            print("2. FNK0113:  Freenove Tower Cooler for Raspberry Pi")
+            
+            try:
+                choice = input("Enter your choice (1 or 2): ").strip()
+                
+                if choice == '1':
+                    kit_type = 1
+                    kit_name = "FNK0108: Freenove Computer Case Kit Mini for Raspberry Pi"
+                    break
+                elif choice == '2':
+                    kit_type = 2
+                    kit_name = "FNK0113: Freenove Tower Cooler for Raspberry Pi"
+                    break
+                else:
+                    print("Invalid input. Please enter 1 or 2.")
+            except KeyboardInterrupt:
+                print("\nOperation cancelled by user.")
+                return None
+        
+        print(f"You selected: {kit_name}")
+        
+        # Save the selection to the configuration
+        self.set_kit_type(kit_type)
+        
+        return kit_type
+
     def create_config_file(self):
         # Initialize default values based on actual usage in app_ui.py
         led_mode_default = 0
@@ -138,6 +195,9 @@ class ConfigManager:
         try:
             if not os.path.exists(self.config_file):
                 self.config_data = {
+                    "General": {
+                        "kit_type": None  # Add kit type configuration
+                    },
                     "Monitor": {
                         "screen_orientation": 0
                     },
@@ -224,6 +284,20 @@ if __name__ == '__main__':
     print(f"OLED config: {oled_config}")
     print()
 
+    print("Testing kit type functionality...")
+    current_kit_type = config_manager.get_kit_type()
+    if current_kit_type is not None:
+        kit_names = {
+            1: "FNK0108: Freenove Computer Case Kit Mini for Raspberry Pi",
+            2: "FNK0113: Freenove Tower Cooler for Raspberry Pi"
+        }
+        print(f"Current kit type: {current_kit_type} ({kit_names.get(current_kit_type, 'Unknown')})")
+    else:
+        print("No kit type set yet.")
+        selected_kit = config_manager.query_kit_type()
+        if selected_kit is not None:
+            print(f"Kit type {selected_kit} has been saved to configuration.")
+
     print("Testing configuration modification...")
     config_manager.set_value('LED', 'mode', 0)
     config_manager.set_value('LED', 'brightness', 255)
@@ -252,6 +326,14 @@ if __name__ == '__main__':
     print(f"New LED brightness: {config_manager.get_value('LED', 'brightness')}")
     print(f"New Fan mode: {config_manager.get_value('Fan', 'mode')}")
     print(f"New Fan duty: {config_manager.get_value('Fan', 'manual_mode_duty')}")
+    
+    final_kit_type = config_manager.get_kit_type()
+    if final_kit_type is not None:
+        kit_names = {
+            1: "FNK0108: Freenove Computer Case Kit Mini for Raspberry Pi",
+            2: "FNK0113: Freenove Tower Cooler for Raspberry Pi"
+        }
+        print(f"Kit type: {final_kit_type} ({kit_names.get(final_kit_type, 'Unknown')})")
     print()
 
     print("Test completed successfully!")
