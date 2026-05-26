@@ -25,7 +25,7 @@ To eject the SD card, press it in again until you hear a click, and the card wil
 Installing Raspberry Pi OS
 ************************************************
 
-If you have not yet installed the Raspberry Pi OS, please refer to the documentation “:ref:`Installing Raspberry Pi OS <fnk0108/codes/install:installing raspberry pi os>`” under the directory Freenove Computer Case Kit Mini for Raspberry Pi to install the OS to your SD card or SSD.
+If you have not yet installed the Raspberry Pi OS, please refer to the documentation ":ref:`Installing Raspberry Pi OS <fnk0108/codes/install:installing raspberry pi os>`" under the directory Freenove Computer Case Kit Mini for Raspberry Pi to install the OS to your SD card or SSD.
 
 **Important note** for users of the **FNK0108B/C/K/L** models: due to hardware limitations of the Dual-NVMe and Quad-NVMe Adapter Boards, please **do not** enable **PCIe 3.0** mode, as this may cause the Raspberry Pi to fail to boot.
 
@@ -88,6 +88,8 @@ Software Packages Update
 
 Run the following command on the terminal to update your Raspberry Pi's package list to the latest version.
 
+In the latest Raspberry Pi 13 (Trixie), passwordless sudo is officially disabled. You will need to enter your user password every time you run a sudo command. Please enter your user password when prompted. (Note: The default password is "**raspberry**", please replace it with your user password.)
+
 .. code-block:: console
     
     sudo apt update
@@ -121,6 +123,11 @@ Run the following two commands one by one in the Raspberry Pi terminal to create
 .. image:: ../_static/imgs/3_APP_Control/Chapter03_05.png
     :align: center
 
+When configuring the environment, you need to select the corresponding product. Please enter "1" to download the code for the corresponding product.
+
+.. image:: ../_static/imgs/3_APP_Control/Chapter03_37.png
+    :align: center
+
 The icon above corresponds to the command shown below.
 
 .. code-block:: console
@@ -131,7 +138,7 @@ The icon above corresponds to the command shown below.
 .. image:: ../_static/imgs/3_APP_Control/Chapter03_28.png
     :align: center
 
-After completing this step, you will find the application in the **“Programming”** section of the menu.  If you accidentally delete the desktop shortcut or wish to add the app to the top launcher, simply right-click **“FNK0108”** and select **“Add to Desktop”** or **“Add to Launcher”**.
+After completing this step, you will find the application in the **"Programming"** section of the menu.  If you accidentally delete the desktop shortcut or wish to add the app to the top launcher, simply right-click **"FNK0108"** and select **"Add to Desktop"** or **"Add to Launcher"**.
 
 .. image:: ../_static/imgs/3_APP_Control/Chapter03_29.png
     :align: center
@@ -147,14 +154,19 @@ With the environment configured from the previous chapter, the accompanying host
 
 This chapter provides a detailed guide on the software's usage. For insight into the interface design, the app_ui.py file is available in the Freenove_Computer_Case_Kit_Mini_for_Raspberry_Pi/Code directory.
 
-Double click the software with Freenove logo on RPi's desktop, and a window will pop up. Click “Execute” to run the program.
+Double click the software with Freenove logo on RPi's desktop, and a window will pop up. Click "Execute" to run the program.
 
 .. image:: ../_static/imgs/3_APP_Control/Chapter03_06.png
     :align: center
 
-The software interface is as shown below.
+Since passwordless sudo is disabled in Trixie, you will also be asked for your password again after reboot. Enter your user password in the pop-up terminal window.
 
 .. image:: ../_static/imgs/3_APP_Control/Chapter03_07.png
+    :align: center
+
+The software interface is as shown below. The left window is the main software interface, and the right window displays debugging information.
+
+.. image:: ../_static/imgs/3_APP_Control/Chapter03_38.png
     :align: center
 
 3.2.1 Dashboard Monitoring
@@ -200,7 +212,7 @@ Note: Only in **Breathing, Blink, Rotate, Following, Static** modes can the colo
 .. image:: ../_static/imgs/3_APP_Control/Chapter03_30.png
     :align: center
 
-After selecting your preferred lighting effect, click the **“Start Task”** button. Both fans will then run with the chosen effect. To stop the lighting effect, click the **“Stop Task”** button.
+After selecting your preferred lighting effect, click the **"Start Task"** button. Both fans will then run with the chosen effect. To stop the lighting effect, click the **"Stop Task"** button.
 
 .. image:: ../_static/imgs/3_APP_Control/Chapter03_35.png
     :align: center
@@ -210,7 +222,7 @@ It is set to rainbow mode by default, as shown below.
 .. image:: ../_static/imgs/3_APP_Control/Chapter03_10.png
     :align: center
 
-If the preset mode does not meet your need, you can modify the **led_run_code_mode** function in the **task_led.py** file under the “Freenove_Computer_Case_Kit_Mini_for_Raspberry_Pi/Code” directory.
+If the preset mode does not meet your need, you can modify the **led_run_code_mode** function in the **task_led.py** file under the "Freenove_Computer_Case_Kit_Mini_for_Raspberry_Pi/Code" directory.
 
 .. image:: ../_static/imgs/3_APP_Control/Chapter03_13.png
     :align: center
@@ -282,7 +294,7 @@ The diagram uses various colors to represent different temperature zones. All va
 
   - When temperature < **Low Temp- Schmitt** (default: 45 - 3 = 42°C), the fan stops.
 
-You can configure the following parameters via the software. After configuration, click the **"Start Task"** button to apply the settings. To turn off the fans, click the **“Stop Task”** button.
+You can configure the following parameters via the software. After configuration, click the **"Start Task"** button to apply the settings. To turn off the fans, click the **"Stop Task"** button.
 
 .. image:: ../_static/imgs/3_APP_Control/Chapter03_19.png
     :align: center
@@ -300,7 +312,7 @@ You can configure the following parameters via the software. After configuration
 Manual mode
 ------------------------
 
-In this mode, you can manually adjust the fan's PWM value (range: 0-255) using the slider of "**Fan Duty**". After setting the desired value, click the **"Start Task"** button to apply the change. To turn off the fans, click the **“Stop Task”** button.
+In this mode, you can manually adjust the fan's PWM value (range: 0-255) using the slider of "**Fan Duty**". After setting the desired value, click the **"Start Task"** button to apply the change. To turn off the fans, click the **"Stop Task"** button.
 
 .. image:: ../_static/imgs/3_APP_Control/Chapter03_20.png
     :align: center
@@ -308,7 +320,7 @@ In this mode, you can manually adjust the fan's PWM value (range: 0-255) using t
 Defualt mode
 ------------------------
 
-Select **“Default Mode”** and click **“Start Task”** to apply the configuration. The fan will operate according to the default thermal management policy of the Raspberry Pi 5. To turn off the fans, click the **“Stop Task”** button.
+Select **"Default Mode"** and click **"Start Task"** to apply the configuration. The fan will operate according to the default thermal management policy of the Raspberry Pi 5. To turn off the fans, click the **"Stop Task"** button.
 
 .. image:: ../_static/imgs/3_APP_Control/Chapter03_21.png
     :align: center
@@ -331,12 +343,10 @@ To learn more about the Raspberry Pi 5's default thermal management policy, plea
 
 https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#fan-cases
 
-3.2.4 Enable Terminal Display(For Debugging)
+3.2.4 Disable Terminal Display & Disable sudo Password
 ========================================================================
 
-To enable custom programming, please follow the steps below to activate the command terminal display. This will allow you to view debug information and other code output.
-
-Steps:
+If you do not need to view the debugging information and want to close the command terminal window, follow the steps below.
 
 Open the terminal on your Raspberry Pi.
 
@@ -344,8 +354,8 @@ Run the following command to set the correct permissions for the Freenove deskto
 
 .. code-block:: console
     
-    ls -al ~/Desktop/Freenove.desktop
-    sudo chmod 777 ~/Desktop/Freenove.desktop
+    ls -al ~/Desktop/FNK0108.desktop
+    sudo chmod 777 ~/Desktop/FNK0108.desktop
 
 .. image:: ../_static/imgs/3_APP_Control/Chapter03_22.png
     :align: center
@@ -354,8 +364,8 @@ To revert to the default permissions, run the following command:
 
 .. code-block:: console
     
-    ls -al ~/Desktop/Freenove.desktop
-    sudo chmod 755 ~/Desktop/Freenove.desktop
+    ls -al ~/Desktop/FNK0108.desktop
+    sudo chmod 755 ~/Desktop/FNK0108.desktop
 
 .. image:: ../_static/imgs/3_APP_Control/Chapter03_23.png
     :align: center
@@ -374,14 +384,4 @@ After modifying the permissions for Freenove.desktop, please follow these steps:
 Change the parameter of **Terminal** from false to **ture**, save and clost the file. 
 
 .. image:: ../_static/imgs/3_APP_Control/Chapter03_25.png
-    :align: center
-
-Double click Freenove software on the desktop, click **“Execute”** upon the pop-up window to launch it
-
-.. image:: ../_static/imgs/3_APP_Control/Chapter03_26.png
-    :align: center
-
-When you open the Freenove software control interface, a command terminal will automatically launch alongside it. All debug information and program logs will be displayed in this terminal window.
-
-.. image:: ../_static/imgs/3_APP_Control/Chapter03_27.png
     :align: center
