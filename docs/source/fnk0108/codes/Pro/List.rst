@@ -187,7 +187,7 @@ Wires
     |                                                                                                       |
     | SH1.0mm_3P Same-Direction Cable 5cm x1                                                                |
     |                                                                                                       |
-    | SH1.0mm_4P Same-Direction Cable 12cm x1                                                               |
+    | SH1.0mm_4P Same-Direction Cable 5cm x1                                                                |
     |                                                                                                       |
     | |List53|                                                                                              |
     +--------------------------------------------------------------------------------+----------------------+
