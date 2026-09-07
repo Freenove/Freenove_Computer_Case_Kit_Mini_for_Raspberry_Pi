@@ -7,7 +7,7 @@ class FAN_TASK:
         signal.signal(signal.SIGTERM, self.signal_handler)
         signal.signal(signal.SIGINT, self.signal_handler)
     
-        self.pi_fan_mode = config.get('mode', 1)  # 0: manual, 1: temp, 2: code
+        self.pi_fan_mode = config.get('mode', 1)  # 0: temp, 1: manual, 2: code
         self.pi_fan_manual_mode_duty = config.get('manual_mode_duty', 255)  # 0-255
         self.pi_fan_temp_mode_threshold = config.get('temp_mode_config', {
             "fan_temp_threshold_low": 45,
