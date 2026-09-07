@@ -7,7 +7,7 @@ class FAN_TASK:
         signal.signal(signal.SIGTERM, self.signal_handler)
         signal.signal(signal.SIGINT, self.signal_handler)
     
-        self.pi_fan_mode = config.get('mode', 1)  # 0: manual, 1: temp, 2: code
+        self.pi_fan_mode = config.get('mode', 1)  # 0: temp, 1: manual, 2: code
         self.pi_fan_manual_mode_duty = config.get('manual_mode_duty', 255)  # 0-255
         self.pi_fan_temp_mode_threshold = config.get('temp_mode_config', {
             "fan_temp_threshold_low": 45,
@@ -17,7 +17,7 @@ class FAN_TASK:
             "fan_temp_mode_duty_high": 200
         })
         # Speed array for each effect, index corresponds to mode number
-        speed = [1.0, 2.0, 1.0]  # Manual, Temp, Code mode sleep times
+        speed = [1.0, 2.0, 1.0]  # Temp, Manual, Code mode sleep times
         while len(speed) < 3:
             speed.append(0.1)
         self.pi_fan_speed = speed
