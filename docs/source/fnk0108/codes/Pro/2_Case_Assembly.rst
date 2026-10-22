@@ -95,6 +95,10 @@ Use of the Screwdriver Bit Holder
     :align: center
     
     +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | :red:`Note: If you plan to use the 5V PWR connector on the GPIO Board to provide additional power to the NVMe Adapter, connect the jumper wires before installing the GPIO Board. A routing notch is provided on the board for this purpose.`                                                                    |
+    |                                                                                                                                                                                                                                                                                                                  |
+    | |Chapter02_98|                                                                                                                                                                                                                                                                                                   |
+    +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
     | Step 1: Before installing the GPIO Board, ensure that its connector is properly aligned with the Raspberry Pi 5's GPIO header. Once aligned, press it down evenly and firmly. (:red:`Note: Correct pin alignment is essential. Misalignment can cause a short circuit and damage the Raspberry Pi.`)             |
     |                                                                                                                                                                                                                                                                                                                  |
     | |Chapter02_53|                                                                                                                                                                                                                                                                                                   |
@@ -128,6 +132,7 @@ Use of the Screwdriver Bit Holder
 .. |Chapter02_56| image:: ../_static/imgs/2_Case_Assembly/Chapter02_56.png
 .. |Chapter02_57| image:: ../_static/imgs/2_Case_Assembly/Chapter02_57.png
 .. |Chapter02_58| image:: ../_static/imgs/2_Case_Assembly/Chapter02_58.png
+.. |Chapter02_98| image:: ../_static/imgs/2_Case_Assembly/Chapter02_98.png
 
 2.2.2 Installing the Power Board
 ==============================================

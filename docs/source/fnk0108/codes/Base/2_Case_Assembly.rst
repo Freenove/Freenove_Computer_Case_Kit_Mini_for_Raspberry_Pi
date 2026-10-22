@@ -93,7 +93,17 @@ Use of the Screwdriver Bit Holder
 .. table::
     :class: table-line
     :align: center
-    
+
+    +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | :combo:`red font-bolder:Note:`                                                                                                                                                                                                                                                                                |
+    |                                                                                                                                                                                                                                                                                                               |
+    | :red:`If you plan to use the RTC battery, connect the RTC cable before installing the Switch Board. Otherwise, the connector will be obstructed, making it difficult to connect the cable afterward.`                                                                                                         |
+    |                                                                                                                                                                                                                                                                                                               |
+    | |Chapter02_99|                                                                                                                                                                                                                                                                                                |
+    |                                                                                                                                                                                                                                                                                                               |
+    | :red:`If you plan to use the 5V PWR connector on the GPIO Board to provide additional power to the NVMe Adapter, connect the jumper wires before installing the GPIO Board. A routing notch is provided on the board for this purpose.`                                                                       |
+    |                                                                                                                                                                                                                                                                                                               |
+    | |Chapter02_100|                                                                                                                                                                                                                                                                                               |
     +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
     | Step 1: Before installing the GPIO Board, ensure that its connector is properly aligned with the Raspberry Pi 5's GPIO header. Once aligned, press it down evenly and firmly. (:red:`Note: Correct pin alignment is essential. Misalignment can cause a short circuit and damage the Raspberry Pi.`)          |
     |                                                                                                                                                                                                                                                                                                               |
@@ -122,6 +132,8 @@ Use of the Screwdriver Bit Holder
 .. |Chapter02_11| image:: ../_static/imgs/2_Case_Assembly/Chapter02_11.png
 .. |Chapter02_12| image:: ../_static/imgs/2_Case_Assembly/Chapter02_12.png
 .. |Chapter02_13| image:: ../_static/imgs/2_Case_Assembly/Chapter02_13.png
+.. |Chapter02_99| image:: ../_static/imgs/2_Case_Assembly/Chapter02_99.png
+.. |Chapter02_100| image:: ../_static/imgs/2_Case_Assembly/Chapter02_100.png
 
 2.2.2 Assembling the NVMe Adapter Board
 ====================================================
